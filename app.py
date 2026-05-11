@@ -25,7 +25,7 @@ class Chamado(db.Model):
     localizacao = db.Column(db.String(100), nullable=False) 
     categoria = db.Column(db.String(50), nullable=False)
     descricao = db.Column(db.Text, nullable=False)
-    prioridade = db.Column(db.String(20), default='normal') # 'alta' ou 'normal'
+    prioridade = db.Column(db.String(20), default='normal')
     status = db.Column(db.String(20), default='aberto')
     data_abertura = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -33,23 +33,24 @@ with app.app_context():
     if database_uri:
         db.create_all()
 
-# --- ROTA PRINCIPAL (FRONT-END) ---
+# --- ROTAS DE NAVEGAÇÃO ---
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# --- ROTA DA API (SALVAMENTO NO BANCO) ---
+@app.route('/painel')
+def painel():
+    return render_template('painel.html')
+
+# --- ROTAS DA API ---
 @app.route('/api/chamados', methods=['POST'])
 def criar_chamado():
-    dados = request.json or request.form
-    
-    print("DADOS CHEGANDO DO FRONT-END:", dados)
+    dados = request.get_json(silent=True) or request.form.to_dict()
 
     if not dados:
-        return jsonify({"erro": "O Flask não recebeu nenhum dado"}), 400
+        return jsonify({"erro": "Nenhum dado recebido"}), 400
 
-    valor_critico = dados.get('problema_critico')
-    is_critico = True if valor_critico in [True, 'on', 'true', '1'] else False
+    is_critico = dados.get('problema_critico') in ['on', True, 'true', '1']
     prioridade_definida = 'alta' if is_critico else 'normal'
 
     novo_chamado = Chamado(
@@ -62,16 +63,11 @@ def criar_chamado():
     try:
         db.session.add(novo_chamado)
         db.session.commit()
-        print("SALVO COM SUCESSO NO BANCO! ID:", novo_chamado.id)
-        
         return jsonify({"mensagem": "Chamado aberto com sucesso!", "id": novo_chamado.id}), 201
-        
     except Exception as e:
         db.session.rollback()
-        print("ERRO GRAVE NO BANCO DE DADOS:", str(e))
-        return jsonify({"erro": str(e)}), 500
+        return jsonify({"erro": "Erro ao salvar no banco"}), 500
 
-# Rota para o Painel de Gestão (GET)
 @app.route('/api/chamados', methods=['GET'])
 def listar_chamados():
     chamados = Chamado.query.order_by(Chamado.data_abertura.desc()).all()

@@ -18,10 +18,12 @@
                     <h4 class="mb-0 fw-bold text-center">Novo Chamado</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form data-cru="request" data-cru-method="POST" data-cru-url="/api/chamados" data-cru-type="json">
+                    
+                    <form class="c-form" action="/api/chamados" method="POST" c-reset="true">
+                        
                         <div class="mb-3">
-                            <label for="local" class="form-label fw-semibold">Localização</label>
-                            <input type="text" class="form-control" id="local" name="localizacao" placeholder="Ex: Bloco A, Lab 4" required>
+                            <label for="localizacao" class="form-label fw-semibold">Localização</label>
+                            <input type="text" class="form-control" id="localizacao" name="localizacao" placeholder="Ex: Bloco A, Lab 4" required>
                         </div>
 
                         <div class="mb-3">
@@ -36,14 +38,14 @@
 
                         <div class="mb-3">
                             <label for="descricao" class="form-label fw-semibold">Descrição do Problema</label>
-                            <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Descreva brevemente..." required></textarea>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Descreva brevemente o que aconteceu..." required></textarea>
                         </div>
 
                         <div class="mb-4 p-3 bg-body-tertiary rounded border-start border-4 border-warning">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="urgencia" name="problema_critico">
                                 <label class="form-check-label fw-bold text-body" for="urgencia">Problema Crítico</label>
-                                <div class="form-text">Seu problema impede a realização de uma aula agora?</div>
+                                <div class="form-text">Marque se este problema impede a realização de uma aula ou atividade agora.</div>
                             </div>
                         </div>
 
@@ -51,6 +53,7 @@
                             <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm">Enviar Chamado</button>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>
