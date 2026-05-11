@@ -41,9 +41,15 @@ def index():
 # --- ROTA DA API (SALVAMENTO NO BANCO) ---
 @app.route('/api/chamados', methods=['POST'])
 def criar_chamado():
-    dados = request.json
+    dados = request.json or request.form
     
-    is_critico = dados.get('problema_critico', False)
+    print("DADOS CHEGANDO DO FRONT-END:", dados)
+
+    if not dados:
+        return jsonify({"erro": "O Flask não recebeu nenhum dado"}), 400
+
+    valor_critico = dados.get('problema_critico')
+    is_critico = True if valor_critico in [True, 'on', 'true', '1'] else False
     prioridade_definida = 'alta' if is_critico else 'normal'
 
     novo_chamado = Chamado(
@@ -56,13 +62,13 @@ def criar_chamado():
     try:
         db.session.add(novo_chamado)
         db.session.commit()
+        print("SALVO COM SUCESSO NO BANCO! ID:", novo_chamado.id)
         
-        return jsonify({
-            "mensagem": "Chamado registrado com sucesso!", 
-            "id": novo_chamado.id
-        }), 201
+        return jsonify({"mensagem": "Chamado aberto com sucesso!", "id": novo_chamado.id}), 201
+        
     except Exception as e:
         db.session.rollback()
+        print("ERRO GRAVE NO BANCO DE DADOS:", str(e))
         return jsonify({"erro": str(e)}), 500
 
 # Rota para o Painel de Gestão (GET)
