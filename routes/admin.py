@@ -34,8 +34,20 @@ def editar_usuario(id):
         flash('Para editar sua própria conta, use o menu de perfil (em breve).', 'warning')
         return redirect(url_for('admin.gerenciar_usuarios'))
         
+    novo_nome = request.form.get('nome_completo')
+    novo_username = request.form.get('username')
     novo_role = request.form.get('role')
     novo_setor = request.form.get('setor')
+    
+    if novo_nome:
+        user.nome_completo = novo_nome
+    if novo_username:
+        # Verifica se o novo username já existe (e não é do próprio usuário)
+        existing_user = User.query.filter_by(username=novo_username).first()
+        if existing_user and existing_user.id != user.id:
+            flash(f'O login {novo_username} já está em uso.', 'danger')
+            return redirect(url_for('admin.gerenciar_usuarios'))
+        user.username = novo_username
     
     # Se o perfil for 'aluno' ou 'adm', não faz sentido ter setor designado (limpamos)
     if novo_role in ['aluno', 'adm']:

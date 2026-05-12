@@ -5,8 +5,21 @@
 {% block content %}
 <div class="container my-5 flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-success mb-0">Gestão de Usuários</h2>
+        <h2 class="fw-bold text-success mb-0">Configurações de Administração</h2>
     </div>
+
+    <!-- Tabs para futuras opções -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active fw-bold text-success" href="#">Usuários</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-muted" href="#">Configurações do Sistema</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-muted" href="#">Integrações</a>
+        </li>
+    </ul>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -20,6 +33,22 @@
     {% endwith %}
 
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom p-3">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar por Nome ou Login...">
+                </div>
+                <div class="col-md-3">
+                    <select id="roleFilter" class="form-select">
+                        <option value="">Todos os Perfis</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Utilizador">Utilizador</option>
+                        <option value="Gestor">Gestor</option>
+                        <option value="Professor">Professor</option>
+                    </select>
+                </div>
+            </div>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -82,12 +111,20 @@
                               <form action="{{ url_for('admin.editar_usuario', id=u.id) }}" method="POST">
                                   <div class="modal-body p-4">
                                     <div class="mb-3">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Nome Completo</label>
+                                        <input type="text" class="form-control" name="nome_completo" value="{{ u.nome_completo }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Login</label>
+                                        <input type="text" class="form-control" name="username" value="{{ u.username }}" required>
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label fw-bold text-muted small text-uppercase">Perfil de Acesso</label>
                                         <select class="form-select" name="role" id="roleSelect{{ u.id }}" onchange="toggleSetor(this, '{{ u.id }}')">
-                                            <option value="aluno" {% if u.role == 'aluno' %}selected{% endif %}>Utilizador (Aluno)</option>
-                                            <option value="professor" {% if u.role == 'professor' %}selected{% endif %}>Equipe Gestora / Professor</option>
-                                            <option value="gestor" {% if u.role == 'gestor' %}selected{% endif %}>Equipe Gestora</option>
-                                            <option value="adm" {% if u.role == 'adm' %}selected{% endif %}>Administrador (ADM)</option>
+                                            <option value="aluno" {% if u.role == 'aluno' %}selected{% endif %}>Utilizador</option>
+                                            <option value="professor" {% if u.role == 'professor' %}selected{% endif %}>Professor</option>
+                                            <option value="gestor" {% if u.role == 'gestor' %}selected{% endif %}>Gestor</option>
+                                            <option value="adm" {% if u.role == 'adm' %}selected{% endif %}>Administrador</option>
                                         </select>
                                     </div>
                                     
@@ -135,5 +172,37 @@
             div.style.display = 'none';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const roleFilter = document.getElementById('roleFilter');
+        const rows = document.querySelectorAll('tbody tr');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const roleTerm = roleFilter.value;
+
+            rows.forEach(row => {
+                // Pular linhas que não sejam de dados principais
+                if(row.children.length < 5) return;
+
+                const nameText = row.children[1].textContent.toLowerCase();
+                const loginText = row.children[2].textContent.toLowerCase();
+                const roleText = row.children[3].textContent.trim();
+                
+                const matchesSearch = nameText.includes(searchTerm) || loginText.includes(searchTerm);
+                const matchesRole = roleTerm === "" || roleText.includes(roleTerm);
+
+                if (matchesSearch && matchesRole) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('keyup', filterTable);
+        if (roleFilter) roleFilter.addEventListener('change', filterTable);
+    });
 </script>
 {% endblock %}
