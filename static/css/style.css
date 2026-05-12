@@ -1,0 +1,94 @@
+:root {
+  --ifsp-green: #2fa866;
+  --ifsp-green-dark: #1b683e;
+  --ifsp-green-gradient: linear-gradient(135deg, #2fa866 0%, #1e874d 100%);
+  --nav-text: rgba(255, 255, 255, 0.85);
+  --nav-text-hover: rgba(255, 255, 255, 1);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.navbar-custom {
+  background: var(--ifsp-green-gradient) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 0;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand img {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover img {
+  transform: scale(1.05);
+}
+
+.nav-link-custom {
+  color: var(--nav-text) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.25rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-link-custom:hover,
+.nav-link-custom.active {
+  color: var(--nav-text-hover) !important;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.profile-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 0.4rem 1.2rem !important;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.profile-badge:hover {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.dropdown-menu-custom {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 0.5rem;
+  animation: slideIn 0.2s ease-out;
+}
+
+.dropdown-menu-custom .dropdown-item {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.dropdown-menu-custom .dropdown-item:hover {
+  background-color: rgba(47, 168, 102, 0.1);
+  color: var(--ifsp-green-dark);
+}
+
+.theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.3s ease;
+}
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: rotate(15deg);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
