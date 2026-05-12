@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: hackaton-app
+    ports:
+      - "3000:5000"
+    env_file:
+      - .env
+    restart: unless-stopped
