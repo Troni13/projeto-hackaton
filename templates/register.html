@@ -31,18 +31,12 @@
                         <label for="username" class="form-label fw-semibold">Usuário</label>
                         <input type="text" class="form-control" id="username" name="username" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="role" class="form-label fw-semibold">Perfil</label>
-                        <select class="form-select" id="role" name="role" required>
-                            <option value="" disabled selected>Selecione um perfil...</option>
-                            <option value="aluno">Aluno</option>
-                            <option value="equipe_gestora">Equipe Gestora</option>
-                            <option value="adm">Administrador (ADM)</option>
-                        </select>
-                    </div>
                     <div class="mb-4">
                         <label for="password" class="form-label fw-semibold">Senha</label>
                         <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="alert alert-info py-2 small border-0 bg-opacity-10 bg-info">
+                        <strong>Nota:</strong> Sua conta será criada como Utilizador padrão. A equipe gestora pode alterar seu perfil posteriormente.
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-success fw-bold py-2">Registrar</button>

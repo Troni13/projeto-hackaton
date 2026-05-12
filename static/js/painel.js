@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
         CAP: 'CAP - Estrutura/Limpeza'
     };
 
+    const statusCores = {
+        'aberto': 'primary',
+        'em atendimento': 'warning',
+        'finalizado': 'success',
+        'cancelado': 'danger'
+    };
+
     const escaparHtml = (valor) => {
         const div = document.createElement('div');
         div.textContent = valor || '';
@@ -29,11 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const montarUrl = () => {
         const dados = new FormData(formFiltros);
         const parametros = new URLSearchParams();
-
         for (const [campo, valor] of dados.entries()) {
             if (valor) parametros.append(campo, valor);
         }
-
         const query = parametros.toString();
         return query ? `/api/chamados?${query}` : '/api/chamados';
     };
@@ -42,70 +47,34 @@ document.addEventListener('DOMContentLoaded', () => {
         totalChamados.textContent = quantidade === 1 ? '1 chamado' : `${quantidade} chamados`;
     };
 
-    window.transferirChamado = async (id) => {
-        const select = document.getElementById(`select-transfer-${id}`);
-        const novoSetor = select.value;
-        if (!novoSetor) return alert("Selecione um setor");
-        
-        if (!confirm(`Deseja mesmo transferir o chamado #${id} para o setor ${novoSetor}?`)) return;
-
-        try {
-            const res = await fetch(`/api/chamados/${id}/transferir`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ setor: novoSetor })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                alert("Transferido com sucesso!");
-                carregarChamados(); // recarrega a lista
-            } else {
-                alert("Erro: " + data.erro);
-            }
-        } catch(e) {
-            alert("Erro na requisição: " + e);
-        }
-    };
-
     const montarCard = (chamado) => {
         const classePrioridade = prioridadeClasses[chamado.prioridade] || 'text-bg-secondary';
         const prioridade = textoPrioridade[chamado.prioridade] || chamado.prioridade;
         const categoria = textoCategoria[chamado.categoria] || chamado.categoria;
+        const corStatus = statusCores[chamado.status] || 'secondary';
 
         return `
             <article class="col-md-6 col-xl-4">
-                <div class="card h-100 shadow-sm border-1 bg-body">
-                    <div class="card-header bg-body d-flex justify-content-between align-items-start gap-3">
+                <div class="card h-100 shadow-sm border-1 bg-body hover-shadow transition" style="cursor:pointer;" onclick="abrirModalInteracao(${chamado.id}, '${chamado.categoria}', '${chamado.status}', '${chamado.autor}')">
+                    <div class="card-header bg-body d-flex justify-content-between align-items-start gap-3 border-0 pt-3">
                         <div>
-                            <span class="text-muted small">Chamado #${escaparHtml(chamado.id)}</span>
-                            <h3 class="h5 fw-bold mb-0">${escaparHtml(categoria)}</h3>
+                            <span class="text-muted small fw-bold">#${escaparHtml(chamado.id)}</span>
+                            <h3 class="h5 fw-bold mb-0 text-success">${escaparHtml(categoria)}</h3>
                         </div>
-                        <span class="badge ${classePrioridade}">${escaparHtml(prioridade)}</span>
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            <span class="badge ${classePrioridade}">${escaparHtml(prioridade)}</span>
+                            <span class="badge bg-${corStatus} text-uppercase" style="font-size:0.65rem;">${escaparHtml(chamado.status)}</span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p class="card-text">${escaparHtml(chamado.descricao)}</p>
-                        <dl class="row mb-0 small">
-                            <dt class="col-5 text-muted">Localizacao</dt>
-                            <dd class="col-7 fw-semibold">${escaparHtml(chamado.localizacao)}</dd>
-
-                            <dt class="col-5 text-muted">Status</dt>
-                            <dd class="col-7 fw-semibold text-capitalize">${escaparHtml(chamado.status)}</dd>
-
-                            <dt class="col-5 text-muted">Abertura</dt>
-                            <dd class="col-7 fw-semibold">${escaparHtml(chamado.data_abertura)}</dd>
-                            
-                            <dt class="col-5 text-muted">Autor</dt>
-                            <dd class="col-7 fw-semibold">${escaparHtml(chamado.autor)}</dd>
-                        </dl>
-                        <hr>
-                        <div class="d-flex gap-2 align-items-center">
-                            <select class="form-select form-select-sm" id="select-transfer-${chamado.id}">
-                                <option value="">Transferir para...</option>
-                                <option value="CAE">CAE (Apoio)</option>
-                                <option value="CTI">CTI (Tecnologia)</option>
-                                <option value="CAP">CAP (Estrutura)</option>
-                            </select>
-                            <button class="btn btn-sm btn-outline-success fw-bold" onclick="transferirChamado(${chamado.id})">Ir</button>
+                    <div class="card-body pt-2">
+                        <p class="card-text text-truncate" style="max-height: 4.5rem; white-space: pre-wrap;">${escaparHtml(chamado.descricao)}</p>
+                        <hr class="text-muted opacity-25">
+                        <div class="d-flex justify-content-between align-items-center small">
+                            <span class="text-muted"><i class="bi bi-geo-alt"></i> ${escaparHtml(chamado.localizacao)}</span>
+                            <span class="text-muted">${escaparHtml(chamado.data_abertura)}</span>
+                        </div>
+                        <div class="mt-3 d-grid">
+                            <button class="btn btn-sm btn-outline-success fw-bold rounded-pill">Ver Detalhes</button>
                         </div>
                     </div>
                 </div>
@@ -113,52 +82,210 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
-    const carregarChamados = async () => {
-        listaChamados.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-info mb-0">Carregando chamados...</div>
-            </div>
-        `;
-
+    window.carregarChamados = async () => {
+        listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-info mb-0">Carregando chamados...</div></div>`;
         try {
             const resposta = await fetch(montarUrl());
             const chamados = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(chamados.erro || 'Erro ao carregar chamados');
-            }
-
+            if (!resposta.ok) throw new Error(chamados.erro || 'Erro ao carregar chamados');
+            
             atualizarTotal(chamados.length);
-
             if (!chamados.length) {
-                listaChamados.innerHTML = `
-                    <div class="col-12">
-                        <div class="alert alert-warning mb-0">Nenhum chamado encontrado com os filtros selecionados.</div>
-                    </div>
-                `;
+                listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-warning mb-0">Nenhum chamado encontrado.</div></div>`;
                 return;
             }
-
             listaChamados.innerHTML = chamados.map(montarCard).join('');
         } catch (erro) {
             atualizarTotal(0);
-            listaChamados.innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger mb-0">${escaparHtml(erro.message)}</div>
-                </div>
-            `;
+            listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-danger mb-0">${escaparHtml(erro.message)}</div></div>`;
         }
     };
 
-    formFiltros.addEventListener('submit', (event) => {
-        event.preventDefault();
-        carregarChamados();
-    });
-
-    btnLimparFiltros.addEventListener('click', () => {
-        formFiltros.reset();
-        carregarChamados();
-    });
+    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); carregarChamados(); });
+    btnLimparFiltros.addEventListener('click', () => { formFiltros.reset(); carregarChamados(); });
 
     carregarChamados();
 });
+
+// Variaveis globais para o modal
+let chamadoAtualId = null;
+
+// Funções do Modal
+window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
+    chamadoAtualId = id;
+    const modalTitle = document.getElementById('modalInteracaoTitle');
+    const chatContainer = document.getElementById('chatContainer');
+    const areaComentario = document.getElementById('areaComentario');
+    const modalFooter = document.getElementById('modalFooterAcoes');
+    
+    modalTitle.textContent = `Chamado #${id} - ${categoria}`;
+    chatContainer.innerHTML = `<div class="text-center text-muted mt-5 spinner-border mx-auto" role="status"></div>`;
+    areaComentario.style.display = 'none';
+    modalFooter.innerHTML = '';
+
+    const modal = new bootstrap.Modal(document.getElementById('modalInteracao'));
+    modal.show();
+
+    try {
+        const res = await fetch(`/api/chamados/${id}/interacoes`);
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.erro);
+        
+        // Renderizar Chat
+        chatContainer.innerHTML = '';
+        if(data.interacoes.length === 0) {
+            chatContainer.innerHTML = `<div class="text-center text-muted mt-3">Nenhuma interação ainda.</div>`;
+        } else {
+            data.interacoes.forEach(msg => {
+                let align = msg.eh_sistema ? 'mx-auto' : (msg.autor_role === 'aluno' ? 'me-auto' : 'ms-auto');
+                let bg = msg.eh_sistema ? 'bg-warning text-dark bg-opacity-25' : (msg.autor_role === 'aluno' ? 'bg-white border' : 'bg-success text-white');
+                if (msg.eh_sistema && msg.mensagem.includes('CANCELADO')) bg = 'bg-danger text-white';
+                
+                chatContainer.innerHTML += `
+                    <div class="p-3 rounded-4 shadow-sm ${bg} ${align}" style="max-width: 85%;">
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem; opacity: 0.8;">
+                            <strong>${msg.eh_sistema ? '🤖 Sistema' : escaparHtml(msg.autor)}</strong>
+                            <span class="ms-3">${msg.data_hora}</span>
+                        </div>
+                        <div style="white-space: pre-wrap; font-size: 0.9rem;">${escaparHtml(msg.mensagem)}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Scroll to bottom
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        const isAberto = data.status_atual !== 'finalizado' && data.status_atual !== 'cancelado';
+        
+        // Definir se o usuário tem permissão para o Setor deste chamado
+        const isGestorSetor = (CURRENT_USER_ROLE === 'gestor' || CURRENT_USER_ROLE === 'professor') && (!CURRENT_USER_SETOR || CURRENT_USER_SETOR === categoria);
+        const isAutor = autorNome && (CURRENT_USER_ROLE === 'aluno'); // Simplificação, na prática seria bom verificar CURRENT_USER_ID == chamado.user_id se estivesse na resposta
+        const isAdm = CURRENT_USER_ROLE === 'adm';
+
+        // Pode comentar?
+        if (isAberto && (isGestorSetor || isAutor || isAdm || (!CURRENT_USER_SETOR && CURRENT_USER_ROLE !== 'aluno'))) {
+            areaComentario.style.display = 'block';
+        }
+
+        // Renderizar Botões
+        let botoesHtml = ``;
+        
+        if (isAberto && (isGestorSetor || isAdm)) {
+            if (data.status_atual === 'aberto') {
+                botoesHtml += `<button class="btn btn-warning fw-bold rounded-pill" onclick="mudarStatus('em atendimento')">Iniciar Atendimento</button>`;
+            } else if (data.status_atual === 'em atendimento') {
+                botoesHtml += `<button class="btn btn-success fw-bold rounded-pill" onclick="pedirResolucaoEFinalizar()">Finalizar Chamado</button>`;
+            }
+            
+            botoesHtml += `
+                <div class="input-group" style="width: 250px;">
+                    <select class="form-select form-select-sm" id="selectTransferir">
+                        <option value="">Transferir para...</option>
+                        <option value="CAE">CAE</option>
+                        <option value="CAP">CAP</option>
+                        <option value="CTI">CTI</option>
+                    </select>
+                    <button class="btn btn-outline-secondary" type="button" onclick="transferir()">Ir</button>
+                </div>
+            `;
+        }
+
+        if (isAberto && (isGestorSetor || isAdm || isAutor)) {
+            botoesHtml += `<button class="btn btn-danger fw-bold rounded-pill ms-auto" onclick="pedirJustificativaECancelar()">Cancelar</button>`;
+        }
+
+        modalFooter.innerHTML = botoesHtml;
+
+    } catch(e) {
+        chatContainer.innerHTML = `<div class="alert alert-danger">${escaparHtml(e.message)}</div>`;
+    }
+};
+
+window.enviarComentario = async () => {
+    const txt = document.getElementById('txtComentario');
+    const msg = txt.value.trim();
+    if(!msg) return;
+    
+    try {
+        const res = await fetch(`/api/chamados/${chamadoAtualId}/interagir`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({mensagem: msg})
+        });
+        if(res.ok) {
+            txt.value = '';
+            abrirModalInteracao(chamadoAtualId, document.getElementById('modalInteracaoTitle').textContent.split(' - ')[1]);
+        } else {
+            const data = await res.json();
+            alert(data.erro);
+        }
+    } catch(e) { alert("Erro de rede"); }
+};
+
+window.mudarStatus = async (novoStatus, resolucao="") => {
+    try {
+        const res = await fetch(`/api/chamados/${chamadoAtualId}/status`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: novoStatus, resolucao})
+        });
+        if(res.ok) {
+            carregarChamados();
+            abrirModalInteracao(chamadoAtualId, document.getElementById('modalInteracaoTitle').textContent.split(' - ')[1]);
+        } else {
+            const data = await res.json();
+            alert(data.erro);
+        }
+    } catch(e) { alert("Erro de rede"); }
+};
+
+window.pedirResolucaoEFinalizar = () => {
+    const resolucao = prompt("Descreva a resolução do problema (Obrigatório para finalizar):");
+    if(resolucao) {
+        mudarStatus('finalizado', resolucao);
+    }
+};
+
+window.pedirJustificativaECancelar = async () => {
+    const justificativa = prompt("Qual a justificativa para o cancelamento? (Obrigatório):");
+    if(!justificativa) return;
+    
+    try {
+        const res = await fetch(`/api/chamados/${chamadoAtualId}/cancelar`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({justificativa})
+        });
+        if(res.ok) {
+            carregarChamados();
+            abrirModalInteracao(chamadoAtualId, document.getElementById('modalInteracaoTitle').textContent.split(' - ')[1]);
+        } else {
+            const data = await res.json();
+            alert(data.erro);
+        }
+    } catch(e) { alert("Erro de rede"); }
+};
+
+window.transferir = async () => {
+    const setor = document.getElementById('selectTransferir').value;
+    if(!setor) return alert("Selecione um setor.");
+    if(!confirm(`Deseja mesmo transferir para ${setor}?`)) return;
+    
+    try {
+        const res = await fetch(`/api/chamados/${chamadoAtualId}/transferir`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({setor})
+        });
+        if(res.ok) {
+            carregarChamados();
+            // fecha modal pois ele transferiu
+            bootstrap.Modal.getInstance(document.getElementById('modalInteracao')).hide();
+        } else {
+            const data = await res.json();
+            alert(data.erro);
+        }
+    } catch(e) { alert("Erro de rede"); }
+};

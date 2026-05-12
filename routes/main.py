@@ -90,7 +90,7 @@ Mensagem do Usuário: {descricao}"""
 @main_bp.route('/api/chamados', methods=['GET'])
 @login_required
 def listar_chamados():
-    if current_user.role == 'adm':
+    if current_user.role in ['adm', 'gestor', 'professor']:
         chamados = Chamado.query.order_by(Chamado.data_abertura.desc()).all()
     else:
         chamados = Chamado.query.filter_by(user_id=current_user.id).order_by(Chamado.data_abertura.desc()).all()
@@ -135,3 +135,154 @@ def transferir_chamado(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"erro": "Erro ao atualizar banco"}), 500
+
+@main_bp.route('/api/chamados/<int:id>/interacoes', methods=['GET'])
+@login_required
+def listar_interacoes(id):
+    chamado = Chamado.query.get_or_404(id)
+    
+    # Validação de acesso
+    if current_user.role == 'aluno' and chamado.user_id != current_user.id:
+        return jsonify({"erro": "Acesso negado"}), 403
+
+    interacoes = []
+    for inter in chamado.interacoes:
+        interacoes.append({
+            "id": inter.id,
+            "autor": inter.user.nome_completo if inter.user else "Sistema",
+            "mensagem": inter.mensagem,
+            "data_hora": inter.data_hora.strftime("%d/%m/%Y %H:%M"),
+            "eh_sistema": inter.eh_sistema,
+            "autor_role": inter.user.role if inter.user else None
+        })
+    
+    return jsonify({
+        "status_atual": chamado.status,
+        "interacoes": interacoes,
+        "resolucao": chamado.resolucao,
+        "justificativa_cancelamento": chamado.justificativa_cancelamento
+    }), 200
+
+@main_bp.route('/api/chamados/<int:id>/interagir', methods=['POST'])
+@login_required
+def interagir_chamado(id):
+    chamado = Chamado.query.get_or_404(id)
+    
+    # Pode interagir: ADM, Gestor do Setor Atual, Gestor Geral, ou o Autor
+    pode_interagir = False
+    if current_user.role == 'adm':
+        pode_interagir = True
+    elif current_user.id == chamado.user_id:
+        pode_interagir = True
+    elif current_user.role in ['gestor', 'professor']:
+        if current_user.setor is None or current_user.setor == chamado.categoria:
+            pode_interagir = True
+            
+    if not pode_interagir:
+        return jsonify({"erro": "Você não tem permissão para interagir neste chamado."}), 403
+
+    dados = request.get_json()
+    mensagem = dados.get('mensagem')
+    if not mensagem:
+        return jsonify({"erro": "Mensagem vazia."}), 400
+        
+    from models import Interacao
+    nova_interacao = Interacao(
+        chamado_id=chamado.id,
+        user_id=current_user.id,
+        mensagem=mensagem
+    )
+    
+    try:
+        db.session.add(nova_interacao)
+        db.session.commit()
+        return jsonify({"mensagem": "Comentário adicionado!"}), 201
+    except:
+        db.session.rollback()
+        return jsonify({"erro": "Erro ao salvar comentário."}), 500
+
+@main_bp.route('/api/chamados/<int:id>/status', methods=['PUT'])
+@login_required
+def alterar_status(id):
+    chamado = Chamado.query.get_or_404(id)
+    
+    # Só gestores do setor (ou sem setor) e adm podem mudar status
+    if current_user.role not in ['adm', 'gestor', 'professor']:
+        return jsonify({"erro": "Sem permissão"}), 403
+    if current_user.setor and current_user.setor != chamado.categoria:
+        return jsonify({"erro": "Chamado pertence a outro setor."}), 403
+
+    dados = request.get_json()
+    novo_status = dados.get('status')
+    resolucao = dados.get('resolucao')
+    
+    if novo_status not in ['em atendimento', 'finalizado']:
+        return jsonify({"erro": "Status inválido."}), 400
+        
+    if novo_status == 'finalizado' and not resolucao:
+        return jsonify({"erro": "É obrigatório enviar a resolução para finalizar."}), 400
+
+    from models import Interacao
+    
+    chamado.status = novo_status
+    
+    msg_sistema = f"Status alterado para: {novo_status.upper()}"
+    if novo_status == 'finalizado':
+        chamado.resolucao = resolucao
+        msg_sistema += f"\nResolução: {resolucao}"
+        
+    interacao_sistema = Interacao(
+        chamado_id=chamado.id,
+        user_id=current_user.id,
+        mensagem=msg_sistema,
+        eh_sistema=True
+    )
+    
+    try:
+        db.session.add(interacao_sistema)
+        db.session.commit()
+        return jsonify({"mensagem": "Status atualizado com sucesso!"}), 200
+    except:
+        db.session.rollback()
+        return jsonify({"erro": "Erro ao salvar status."}), 500
+
+@main_bp.route('/api/chamados/<int:id>/cancelar', methods=['PUT'])
+@login_required
+def cancelar_chamado(id):
+    chamado = Chamado.query.get_or_404(id)
+    
+    dados = request.get_json()
+    justificativa = dados.get('justificativa')
+    
+    if not justificativa:
+        return jsonify({"erro": "A justificativa é obrigatória para cancelar."}), 400
+
+    # Pode cancelar: Autor do chamado ou Gestores competentes
+    pode_cancelar = False
+    if current_user.id == chamado.user_id:
+        pode_cancelar = True
+    elif current_user.role in ['adm', 'gestor', 'professor']:
+        if current_user.setor is None or current_user.setor == chamado.categoria:
+            pode_cancelar = True
+            
+    if not pode_cancelar:
+        return jsonify({"erro": "Você não tem permissão para cancelar este chamado."}), 403
+
+    from models import Interacao
+    chamado.status = 'cancelado'
+    chamado.justificativa_cancelamento = justificativa
+    
+    interacao_sistema = Interacao(
+        chamado_id=chamado.id,
+        user_id=current_user.id,
+        mensagem=f"Chamado CANCELADO.\nJustificativa: {justificativa}",
+        eh_sistema=True
+    )
+    
+    try:
+        db.session.add(interacao_sistema)
+        db.session.commit()
+        return jsonify({"mensagem": "Chamado cancelado com sucesso!"}), 200
+    except:
+        db.session.rollback()
+        return jsonify({"erro": "Erro ao cancelar chamado."}), 500

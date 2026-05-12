@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Administração de Usuários - RadarIF{% endblock %}
+
+{% block content %}
+<div class="container my-5 flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success mb-0">Gestão de Usuários</h2>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-success">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Nome Completo</th>
+                            <th>Login</th>
+                            <th>Perfil</th>
+                            <th>Setor Designado</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td class="ps-4 text-muted fw-bold">#{{ u.id }}</td>
+                            <td>{{ u.nome_completo }}</td>
+                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary border">{{ u.username }}</span></td>
+                            <td>
+                                {% if u.role == 'adm' %}
+                                    <span class="badge bg-danger">Administrador</span>
+                                {% elif u.role == 'aluno' %}
+                                    <span class="badge bg-primary">Utilizador</span>
+                                {% elif u.role == 'gestor' %}
+                                    <span class="badge bg-success">Gestor</span>
+                                {% elif u.role == 'professor' %}
+                                    <span class="badge bg-info text-dark">Professor</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ u.role }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.setor %}
+                                    <span class="badge border border-warning text-warning">{{ u.setor }}</span>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                {% if u.id != current_user.id %}
+                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold" 
+                                        data-bs-toggle="modal" data-bs-target="#editModal{{ u.id }}">
+                                    Editar
+                                </button>
+                                {% else %}
+                                <span class="badge bg-light text-muted">Você</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Modal de Edição para o Usuário {{ u.id }} -->
+                        <div class="modal fade" id="editModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg rounded-4">
+                              <div class="modal-header bg-success text-white border-0">
+                                <h5 class="modal-title fw-bold">Editar {{ u.nome_completo }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <form action="{{ url_for('admin.editar_usuario', id=u.id) }}" method="POST">
+                                  <div class="modal-body p-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Perfil de Acesso</label>
+                                        <select class="form-select" name="role" id="roleSelect{{ u.id }}" onchange="toggleSetor(this, '{{ u.id }}')">
+                                            <option value="aluno" {% if u.role == 'aluno' %}selected{% endif %}>Utilizador (Aluno)</option>
+                                            <option value="professor" {% if u.role == 'professor' %}selected{% endif %}>Equipe Gestora / Professor</option>
+                                            <option value="gestor" {% if u.role == 'gestor' %}selected{% endif %}>Equipe Gestora</option>
+                                            <option value="adm" {% if u.role == 'adm' %}selected{% endif %}>Administrador (ADM)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Apenas exibe a caixa de setor se for gestor ou professor -->
+                                    <div class="mb-3" id="setorDiv{{ u.id }}" style="display: {% if u.role in ['gestor', 'professor'] %}block{% else %}none{% endif %};">
+                                        <label class="form-label fw-bold text-muted small text-uppercase">Vincular a um Setor (Opcional)</label>
+                                        <select class="form-select" name="setor">
+                                            <option value="">Sem setor (Gestor Geral)</option>
+                                            <option value="CAE" {% if u.setor == 'CAE' %}selected{% endif %}>CAE</option>
+                                            <option value="CAP" {% if u.setor == 'CAP' %}selected{% endif %}>CAP</option>
+                                            <option value="CTI" {% if u.setor == 'CTI' %}selected{% endif %}>CTI</option>
+                                        </select>
+                                        <div class="form-text small">Ao selecionar um setor, este gestor terá acesso exclusivo para gerenciar os chamados desse departamento.</div>
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer bg-light border-0">
+                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-success rounded-pill fw-bold">Salvar Alterações</button>
+                                  </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if not users %}
+                <div class="text-center p-5 text-muted">
+                    <p class="mb-0">Nenhum usuário encontrado no sistema.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleSetor(selectObj, userId) {
+        const div = document.getElementById('setorDiv' + userId);
+        if(selectObj.value === 'gestor' || selectObj.value === 'professor') {
+            div.style.display = 'block';
+        } else {
+            div.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

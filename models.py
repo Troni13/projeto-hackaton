@@ -8,7 +8,8 @@ class User(db.Model, UserMixin):
     nome_completo = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='aluno') # adm, aluno, equipe_gestora
+    role = db.Column(db.String(20), nullable=False, default='aluno') # adm, aluno, gestor, professor
+    setor = db.Column(db.String(20), nullable=True) # CAE, CAP, CTI
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -24,6 +25,19 @@ class Chamado(db.Model):
     prioridade = db.Column(db.String(20), default='normal')
     status = db.Column(db.String(20), default='aberto')
     data_abertura = db.Column(db.DateTime, default=lambda: datetime.now(timezone(timedelta(hours=-3))))
+    resolucao = db.Column(db.Text, nullable=True)
+    justificativa_cancelamento = db.Column(db.Text, nullable=True)
     
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('chamados', lazy=True))
+
+class Interacao(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chamado_id = db.Column(db.Integer, db.ForeignKey('chamado.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # Nullable para msgs do sistema
+    mensagem = db.Column(db.Text, nullable=False)
+    data_hora = db.Column(db.DateTime, default=lambda: datetime.now(timezone(timedelta(hours=-3))))
+    eh_sistema = db.Column(db.Boolean, default=False)
+
+    chamado = db.relationship('Chamado', backref=db.backref('interacoes', lazy=True, order_by='Interacao.data_hora'))
+    user = db.relationship('User')

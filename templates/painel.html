@@ -57,7 +57,39 @@
             <div class="alert alert-info mb-0">Carregando chamados...</div>
         </div>
     </section>
+    
+    <div class="modal fade" id="modalInteracao" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-success text-white border-0">
+            <h5 class="modal-title fw-bold" id="modalInteracaoTitle">Chamado #000</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0 bg-light">
+             <div id="chatContainer" class="p-4" style="height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                <div class="text-center text-muted mt-5 spinner-border mx-auto" role="status"></div>
+             </div>
+             
+             <div id="areaComentario" class="p-3 bg-white border-top" style="display: none;">
+                 <textarea id="txtComentario" class="form-control mb-2 rounded-3" rows="2" placeholder="Digite uma nova informação ou comentário..."></textarea>
+                 <div class="d-flex justify-content-end">
+                     <button class="btn btn-success fw-bold rounded-pill px-4" onclick="enviarComentario()">Enviar Mensagem</button>
+                 </div>
+             </div>
+          </div>
+          
+          <div class="modal-footer bg-white border-top-0 d-flex flex-wrap justify-content-between gap-2" id="modalFooterAcoes">
+          </div>
+        </div>
+      </div>
+    </div>
 </main>
+<!-- Passando o role e id do usuário atual para o Javascript ler de forma segura -->
+<script>
+    const CURRENT_USER_ROLE = "{{ current_user.role }}";
+    const CURRENT_USER_SETOR = "{{ current_user.setor or '' }}";
+    const CURRENT_USER_ID = "{{ current_user.id }}";
+</script>
 {% endblock %}
 
 {% block scripts %}

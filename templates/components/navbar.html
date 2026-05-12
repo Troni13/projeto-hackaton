@@ -21,6 +21,10 @@
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/">Abrir Chamado</a></li>
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/painel">Painel de Gestão</a></li>
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/servicos">Serviços</a></li>
+                
+                {% if current_user.role == 'adm' %}
+                <li class="nav-item ms-lg-2"><a class="nav-link nav-link-custom text-warning fw-bold border border-warning rounded-pill px-3" href="{{ url_for('admin.gerenciar_usuarios') }}">⚙️ Admin</a></li>
+                {% endif %}
                 <li class="nav-item dropdown ms-lg-2 mt-2 mt-lg-0">
                     <a class="nav-link dropdown-toggle text-white profile-badge" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Olá, {{ current_user.username }}

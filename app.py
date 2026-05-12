@@ -8,7 +8,7 @@ def create_app():
     app.config['SECRET_KEY'] = 'hackaton-secret-key-123'
     
     # --- CONFIGURAÇÃO DO BANCO ---
-    database_uri = os.getenv('DATABASE_URL')
+    database_uri = os.getenv('DATABASE_URL', 'sqlite:///projeto.db')
     
     if database_uri:
         if database_uri.startswith("mysql://"):
@@ -35,9 +35,11 @@ def create_app():
     # Importa e registra os Blueprints
     from routes.auth import auth_bp
     from routes.main import main_bp
+    from routes.admin import admin_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_bp)
 
     # Criação das tabelas
     with app.app_context():

@@ -34,7 +34,6 @@ def register():
         nome_completo = request.form.get('nome_completo')
         username = request.form.get('username')
         password = request.form.get('password')
-        role = request.form.get('role')
 
         user = User.query.filter_by(username=username).first()
 
@@ -42,7 +41,8 @@ def register():
             flash('Nome de usuário já existe.', 'danger')
             return redirect(url_for('auth.register'))
 
-        new_user = User(nome_completo=nome_completo, username=username, role=role)
+        # Todo novo usuário criado pela tela de registro é 'aluno' (Utilizador) por padrão
+        new_user = User(nome_completo=nome_completo, username=username, role='aluno', setor=None)
         new_user.set_password(password)
 
         db.session.add(new_user)
