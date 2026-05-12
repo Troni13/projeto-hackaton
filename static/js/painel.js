@@ -15,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const textoCategoria = {
-        estrutural: 'Estrutural',
-        tecnologica: 'Tecnologico',
-        limpeza: 'Limpeza'
+        CAE: 'CAE - Apoio/Ensino',
+        CTI: 'CTI - Tecnologia',
+        CAP: 'CAP - Estrutura/Limpeza'
     };
 
     const escaparHtml = (valor) => {
@@ -40,6 +40,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const atualizarTotal = (quantidade) => {
         totalChamados.textContent = quantidade === 1 ? '1 chamado' : `${quantidade} chamados`;
+    };
+
+    window.transferirChamado = async (id) => {
+        const select = document.getElementById(`select-transfer-${id}`);
+        const novoSetor = select.value;
+        if (!novoSetor) return alert("Selecione um setor");
+        
+        if (!confirm(`Deseja mesmo transferir o chamado #${id} para o setor ${novoSetor}?`)) return;
+
+        try {
+            const res = await fetch(`/api/chamados/${id}/transferir`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ setor: novoSetor })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("Transferido com sucesso!");
+                carregarChamados(); // recarrega a lista
+            } else {
+                alert("Erro: " + data.erro);
+            }
+        } catch(e) {
+            alert("Erro na requisição: " + e);
+        }
     };
 
     const montarCard = (chamado) => {
@@ -68,7 +93,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             <dt class="col-5 text-muted">Abertura</dt>
                             <dd class="col-7 fw-semibold">${escaparHtml(chamado.data_abertura)}</dd>
+                            
+                            <dt class="col-5 text-muted">Autor</dt>
+                            <dd class="col-7 fw-semibold">${escaparHtml(chamado.autor)}</dd>
                         </dl>
+                        <hr>
+                        <div class="d-flex gap-2 align-items-center">
+                            <select class="form-select form-select-sm" id="select-transfer-${chamado.id}">
+                                <option value="">Transferir para...</option>
+                                <option value="CAE">CAE (Apoio)</option>
+                                <option value="CTI">CTI (Tecnologia)</option>
+                                <option value="CAP">CAP (Estrutura)</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline-success fw-bold" onclick="transferirChamado(${chamado.id})">Ir</button>
+                        </div>
                     </div>
                 </div>
             </article>

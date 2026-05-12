@@ -1,5 +1,7 @@
+import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
+import google.generativeai as genai
 from models import Chamado
 from extensions import db
 
@@ -8,7 +10,7 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('novo_chamado.html')
 
 @main_bp.route('/painel')
 @login_required
@@ -22,14 +24,57 @@ def criar_chamado():
 
     if not dados:
         return jsonify({"erro": "Nenhum dado recebido"}), 400
+        
+    descricao = dados.get('descricao')
+    localizacao = dados.get('localizacao')
+    
+    if not descricao or not localizacao:
+        return jsonify({"erro": "Descrição e localização são obrigatórios"}), 400
 
     is_critico = dados.get('problema_critico') in ['on', True, 'true', '1']
     prioridade_definida = 'alta' if is_critico else 'normal'
 
+    # --- INTEGRAÇÃO COM GEMINI ---
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"erro": "Chave da API do Gemini não configurada no servidor."}), 500
+        
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-flash-latest')
+        
+        prompt = f"""Você é um assistente rigoroso do Instituto Federal (IF) responsável por fazer a triagem de chamados.
+Sua única tarefa é ler a descrição do problema e responder ESTRITAMENTE com a sigla do setor responsável. Não adicione nenhuma outra palavra.
+
+Regras de Classificação:
+- CAE: Apoio em Sala e Itens perdidos (Ex: Falta carteira, giz, apagador, ar condicionado pingando na mesa, algo esquecido).
+- CTI: Tecnologia e Equipamentos (Ex: Projetor não liga, computador sem internet, software não abre).
+- CAP: Estrutura, Manutenção e Limpeza (Ex: Lâmpada queimada, porta quebrada, tomada com curto, lixo cheio, banheiro sujo, mato alto).
+
+Regra de Recusa:
+- Se a mensagem não tiver absolutamente NADA a ver com os problemas citados, ou for uma brincadeira absurda (ex: pedir comida, falar de jogos), você deve responder exatamente assim: REJEITADO: <Motivo educado explicando que o sistema é exclusivo para problemas de infraestrutura/tecnologia/ensino do IF>.
+
+Mensagem do Usuário: {descricao}"""
+
+        response = model.generate_content(prompt)
+        resposta_ia = response.text.strip()
+        
+        if resposta_ia.startswith("REJEITADO:"):
+            # Retorna o erro com a mensagem gerada pela IA
+            return jsonify({"erro": resposta_ia}), 400
+            
+        # Garante que a IA retornou uma categoria válida
+        categorias_validas = ['CAE', 'CTI', 'CAP']
+        categoria_definida = resposta_ia if resposta_ia in categorias_validas else 'CAP' # Padrão para falha
+
+    except Exception as e:
+        print(f"Erro na IA: {e}")
+        return jsonify({"erro": "Falha ao analisar a descrição usando IA."}), 500
+
     novo_chamado = Chamado(
-        localizacao=dados.get('localizacao'),
-        categoria=dados.get('categoria'),
-        descricao=dados.get('descricao'),
+        localizacao=localizacao,
+        categoria=categoria_definida,
+        descricao=descricao,
         prioridade=prioridade_definida,
         user_id=current_user.id
     )
@@ -37,7 +82,7 @@ def criar_chamado():
     try:
         db.session.add(novo_chamado)
         db.session.commit()
-        return jsonify({"mensagem": "Chamado aberto com sucesso!", "id": novo_chamado.id}), 201
+        return jsonify({"mensagem": "Chamado aberto com sucesso!", "id": novo_chamado.id, "setor": categoria_definida}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"erro": "Erro ao salvar no banco"}), 500
@@ -63,3 +108,30 @@ def listar_chamados():
             "autor": c.user.nome_completo if c.user else "Desconhecido"
         })
     return jsonify(lista), 200
+
+@main_bp.route('/api/chamados/<int:id>/transferir', methods=['PUT'])
+@login_required
+def transferir_chamado(id):
+    dados = request.get_json()
+    novo_setor = dados.get('setor')
+    
+    if novo_setor not in ['CAE', 'CTI', 'CAP']:
+        return jsonify({"erro": "Setor inválido"}), 400
+        
+    chamado = Chamado.query.get(id)
+    if not chamado:
+        return jsonify({"erro": "Chamado não encontrado"}), 404
+        
+    # Dependendo da regra, apenas ADM ou o próprio usuário poderia transferir. 
+    # Vou deixar aberto para qualquer um logado que consiga ver o chamado, 
+    # mas o ideal seria checar permissão (ex: só ADM ou a equipe de gestão)
+    if current_user.role != 'adm' and chamado.user_id != current_user.id:
+         return jsonify({"erro": "Sem permissão"}), 403
+
+    try:
+        chamado.categoria = novo_setor
+        db.session.commit()
+        return jsonify({"mensagem": f"Chamado transferido para {novo_setor} com sucesso"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"erro": "Erro ao atualizar banco"}), 500

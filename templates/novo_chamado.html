@@ -19,21 +19,15 @@
                 </div>
                 <div class="card-body p-4">
                     
-                    <form class="c-form" action="/api/chamados" method="POST" c-reset="true">
+                    <form class="c-form" action="/api/chamados" method="POST" c-reset="true" c-type="json" c-callback="onChamadoSubmit">
                         
                         <div class="mb-3">
                             <label for="localizacao" class="form-label fw-semibold">Localização</label>
                             <input type="text" class="form-control" id="localizacao" name="localizacao" placeholder="Ex: Bloco A, Lab 4" required>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="categoria" class="form-label fw-semibold">Categoria</label>
-                            <select class="form-select" id="categoria" name="categoria" required>
-                                <option value="" disabled selected>Selecione o tipo de problema...</option>
-                                <option value="estrutural">Estrutural (Elétrica, Hidráulica, Alvenaria)</option>
-                                <option value="tecnologica">Tecnológico (Projetor, Rede, Computador)</option>
-                                <option value="limpeza">Limpeza</option>
-                            </select>
+                        <div class="alert alert-info py-2 small mb-3">
+                            <i class="bi bi-robot"></i> <strong>Aviso:</strong> Descreva o problema detalhadamente. Nossa Inteligência Artificial encaminhará seu chamado para o setor correto (CAE, CTI ou CAP).
                         </div>
 
                         <div class="mb-3">
@@ -48,6 +42,8 @@
                                 <div class="form-text">Marque se este problema impede a realização de uma aula ou atividade agora.</div>
                             </div>
                         </div>
+
+                        <div id="mensagemForm" class="mb-3"></div>
 
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm">Enviar Chamado</button>

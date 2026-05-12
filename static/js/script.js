@@ -15,3 +15,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+$cruCallback('onChamadoSubmit', (res, el) => {
+    const mensagemForm = document.getElementById('mensagemForm');
+    if (!mensagemForm) return;
+
+    if (res.status === 201) {
+        mensagemForm.innerHTML = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Sucesso!</strong> O chamado foi criado e a Inteligência Artificial encaminhou para o setor <strong>${res.data.setor}</strong>.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    } else {
+        const erroMsg = res.data.erro || "Ocorreu um erro desconhecido.";
+        mensagemForm.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Não foi possível criar o chamado!</strong><br> ${erroMsg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+});
