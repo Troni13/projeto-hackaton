@@ -17,9 +17,24 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto me-3">
+                {% if current_user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="/">Abrir Chamado</a></li>
                 <li class="nav-item"><a class="nav-link" href="/painel">Painel de Gestão</a></li>
                 <li class="nav-item"><a class="nav-link" href="/servicos">Serviços</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle fw-bold text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Olá, {{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><span class="dropdown-item-text text-muted small">Perfil: {{ current_user.role|capitalize }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">Sair</a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Entrar</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Registrar</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>

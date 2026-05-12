@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - RadarIF{% endblock %}
+
+{% block content %}
+<div class="container my-5 flex-grow-1 d-flex align-items-center justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white py-3 border-0 text-center">
+                <h4 class="mb-0 fw-bold">Criar Conta</h4>
+            </div>
+            <div class="card-body p-4">
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('auth.register') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="nome_completo" class="form-label fw-semibold">Nome Completo</label>
+                        <input type="text" class="form-control" id="nome_completo" name="nome_completo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Usuário</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label fw-semibold">Perfil</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="" disabled selected>Selecione um perfil...</option>
+                            <option value="aluno">Aluno</option>
+                            <option value="equipe_gestora">Equipe Gestora</option>
+                            <option value="adm">Administrador (ADM)</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success fw-bold py-2">Registrar</button>
+                    </div>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <p class="mb-0">Já tem uma conta? <a href="{{ url_for('auth.login') }}" class="text-success text-decoration-none fw-bold">Faça login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

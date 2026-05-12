@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Login - RadarIF{% endblock %}
+
+{% block content %}
+<div class="container my-5 flex-grow-1 d-flex align-items-center justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white py-3 border-0 text-center">
+                <h4 class="mb-0 fw-bold">Acessar Conta</h4>
+            </div>
+            <div class="card-body p-4">
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('auth.login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Usuário</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success fw-bold py-2">Entrar</button>
+                    </div>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <p class="mb-0">Não tem uma conta? <a href="{{ url_for('auth.register') }}" class="text-success text-decoration-none fw-bold">Registre-se aqui</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
