@@ -19,6 +19,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/ubuntu/projeto-hackaton
+            cd /home/ubuntu/RadarIF/projeto-hackaton
             git pull origin main
             sudo docker compose up -d --build
