@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Painel de Chamados - Zeladoria IFSP{% endblock %}
+
+{% block content %}
+<header class="bg-body py-5 border-bottom">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold text-success">Painel de Chamados</h1>
+        <p class="lead text-muted mb-0">Acompanhe, pesquise e filtre os chamados cadastrados.</p>
+    </div>
+</header>
+
+<main class="container my-5 flex-grow-1">
+    <section class="card shadow-sm border-1 bg-body mb-4">
+        <div class="card-header bg-success text-white py-3 border-0">
+            <h4 class="mb-0 fw-bold text-center">Filtros</h4>
+        </div>
+        <div class="card-body p-4">
+            <form id="formFiltros" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="pesquisa" class="form-label fw-semibold">Pesquisa</label>
+                    <input type="search" class="form-control" id="pesquisa" name="pesquisa" placeholder="Local, categoria, descricao ou status">
+                </div>
+
+                <div class="col-sm-6 col-md-2">
+                    <label for="data_inicio" class="form-label fw-semibold">Data</label>
+                    <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+                </div>
+
+                <div class="col-sm-6 col-md-2">
+                    <label for="prioridade" class="form-label fw-semibold">Prioridade</label>
+                    <select class="form-select" id="prioridade" name="prioridade">
+                        <option value="">Todas</option>
+                        <option value="alta">Alta</option>
+                        <option value="normal">Normal</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-6 col-md-2 d-grid">
+                    <button type="submit" class="btn btn-success fw-bold">Filtrar</button>
+                </div>
+
+                <div class="col-sm-6 col-md-2 d-grid">
+                    <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary">Limpar filtros</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 fw-bold mb-0">Chamados cadastrados</h2>
+        <span id="totalChamados" class="badge text-bg-success rounded-pill">0 chamados</span>
+    </div>
+
+    <section id="listaChamados" class="row g-4">
+        <div class="col-12">
+            <div class="alert alert-info mb-0">Carregando chamados...</div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/painel.js') }}"></script>
+{% endblock %}
