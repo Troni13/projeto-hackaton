@@ -1,12 +1,12 @@
 import os
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, time
-from sqlalchemy import or_
+from datetime import datetime, timezone, timedelta
 
 app = Flask(__name__)
+
 # --- CONFIGURAÇÃO DO BANCO ---
-database_uri = os.getenv('DATABASE_URL')
+database_uri = "os.getenv('DATABASE_URL')"
 
 if database_uri:
     if database_uri.startswith("mysql://"):
@@ -27,7 +27,7 @@ class Chamado(db.Model):
     descricao = db.Column(db.Text, nullable=False)
     prioridade = db.Column(db.String(20), default='normal')
     status = db.Column(db.String(20), default='aberto')
-    data_abertura = db.Column(db.DateTime, default=datetime.utcnow)
+    data_abertura = db.Column(db.DateTime, default=lambda: datetime.now(timezone(timedelta(hours=-3))))
 
 with app.app_context():
     if database_uri:
@@ -70,40 +70,7 @@ def criar_chamado():
 
 @app.route('/api/chamados', methods=['GET'])
 def listar_chamados():
-    query = Chamado.query
-
-    prioridade = request.args.get('prioridade')
-    data_inicio = request.args.get('data_inicio')
-    data_fim = request.args.get('data_fim')
-    pesquisa = request.args.get('pesquisa')
-
-    if prioridade:
-        query = query.filter(Chamado.prioridade == prioridade)
-
-    if data_inicio:
-        try:
-            inicio = datetime.strptime(data_inicio, "%Y-%m-%d")
-            query = query.filter(Chamado.data_abertura >= inicio)
-        except ValueError:
-            return jsonify({"erro": "Data inicial inválida"}), 400
-
-    if data_fim:
-        try:
-            fim = datetime.combine(datetime.strptime(data_fim, "%Y-%m-%d").date(), time.max)
-            query = query.filter(Chamado.data_abertura <= fim)
-        except ValueError:
-            return jsonify({"erro": "Data final inválida"}), 400
-
-    if pesquisa:
-        termo = f"%{pesquisa}%"
-        query = query.filter(or_(
-            Chamado.localizacao.ilike(termo),
-            Chamado.categoria.ilike(termo),
-            Chamado.descricao.ilike(termo),
-            Chamado.status.ilike(termo)
-        ))
-
-    chamados = query.order_by(Chamado.data_abertura.desc()).all()
+    chamados = Chamado.query.order_by(Chamado.data_abertura.desc()).all()
     lista = []
     for c in chamados:
         lista.append({
