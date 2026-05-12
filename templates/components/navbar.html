@@ -20,6 +20,7 @@
                 {% if current_user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/">Abrir Chamado</a></li>
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/painel">Painel de Gestão</a></li>
+                <li class="nav-item"><a class="nav-link nav-link-custom" href="{{ url_for('comunidade.index') }}">Comunidade</a></li>
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/servicos">Serviços</a></li>
                 
                 <!-- O link de admin foi movido para o dropdown -->

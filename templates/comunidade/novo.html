@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Anúncio - RadarIF{% endblock %}
+
+{% block content %}
+<div class="container my-5 flex-grow-1">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-success text-white border-bottom-0 py-3 rounded-top-4">
+                    <h5 class="card-title fw-bold mb-0">Criar Novo Anúncio</h5>
+                </div>
+                <div class="card-body p-4">
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+
+                    <div class="alert alert-info small">
+                        <i class="bi bi-robot"></i> <strong>Atenção:</strong> Seu anúncio será avaliado e categorizado pela nossa Inteligência Artificial para garantir que o conteúdo está de acordo com as regras de convivência do campus.
+                    </div>
+
+                    <form action="{{ url_for('comunidade.novo_anuncio') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Título</label>
+                            <input type="text" class="form-control" name="titulo" required placeholder="Ex: Feira de Ciências, Objeto Perdido...">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Conteúdo do Anúncio</label>
+                            <textarea class="form-control" name="conteudo" rows="6" required placeholder="Escreva os detalhes aqui..."></textarea>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success fw-bold py-2 rounded-pill">
+                                Publicar no Mural
+                            </button>
+                            <a href="{{ url_for('comunidade.index') }}" class="btn btn-light text-muted fw-bold py-2 rounded-pill">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

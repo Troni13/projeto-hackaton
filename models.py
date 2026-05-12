@@ -41,3 +41,16 @@ class Interacao(db.Model):
 
     chamado = db.relationship('Chamado', backref=db.backref('interacoes', lazy=True, order_by='Interacao.data_hora'))
     user = db.relationship('User')
+
+class Anuncio(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    conteudo = db.Column(db.Text, nullable=False)
+    tipo = db.Column(db.String(50), nullable=False, default='comum') # comum, oficial
+    autor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    data_criacao = db.Column(db.DateTime, default=lambda: datetime.now(timezone(timedelta(hours=-3))))
+    status_moderacao = db.Column(db.String(20), default='aprovado') # aprovado, rejeitado
+    motivo_rejeicao = db.Column(db.Text, nullable=True)
+    tags = db.Column(db.String(200), nullable=True)
+
+    autor = db.relationship('User', backref=db.backref('anuncios', lazy=True))

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Mural da Comunidade - RadarIF{% endblock %}
+
+{% block content %}
+<div class="container my-5 flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success mb-0">Mural da Comunidade</h2>
+        <a href="{{ url_for('comunidade.novo_anuncio') }}" class="btn btn-success rounded-pill fw-bold">
+            + Novo Anúncio
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        {% for anuncio in anuncios %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 {% if anuncio.tipo == 'oficial' %}border-start border-4 border-success bg-light{% endif %}">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title fw-bold mb-0 {% if anuncio.tipo == 'oficial' %}text-success{% endif %}">
+                            {{ anuncio.titulo }}
+                        </h5>
+                        {% if anuncio.tipo == 'oficial' %}
+                        <span class="badge bg-success rounded-pill">Aviso Oficial</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-2">
+                        {% if anuncio.tags %}
+                            {% for tag in anuncio.tags.split(',') %}
+                                {% if tag %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill me-1">{{ tag.strip() }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <p class="card-text flex-grow-1 text-muted">{{ anuncio.conteudo }}</p>
+                    
+                    <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <div class="small text-muted">
+                            <span class="d-block"><strong>{{ anuncio.autor.nome_completo }}</strong></span>
+                            <span class="d-block">{{ anuncio.data_criacao.strftime('%d/%m/%Y %H:%M') }}</span>
+                        </div>
+                        
+                        {% if current_user.id == anuncio.autor_id or current_user.role == 'adm' %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('comunidade.editar_anuncio', id=anuncio.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                            <form action="{{ url_for('comunidade.deletar_anuncio', id=anuncio.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anúncio?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center p-5 text-muted bg-white rounded-4 shadow-sm">
+            <p class="mb-0">Nenhum anúncio publicado ainda no mural.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
