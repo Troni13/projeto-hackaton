@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 app = Flask(__name__)
 
 # --- CONFIGURAÇÃO DO BANCO ---
-database_uri = "os.getenv('DATABASE_URL')"
+database_uri = os.getenv('DATABASE_URL')
 
 if database_uri:
     if database_uri.startswith("mysql://"):
