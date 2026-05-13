@@ -226,7 +226,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
             if (data.status_atual === 'aberto') {
                 botoesHtml += `<button class="btn btn-warning fw-bold rounded-pill" onclick="mudarStatus('em atendimento')">Iniciar Atendimento</button>`;
             } else if (data.status_atual === 'em atendimento') {
-                botoesHtml += `<button class="btn btn-success fw-bold rounded-pill" onclick="pedirResolucaoEFinalizar()">Finalizar Chamado</button>`;
+                botoesHtml += `<button class="btn btn-success fw-bold rounded-pill" onclick="mostrarFormFinalizar()">Finalizar Chamado</button>`;
             }
             
             botoesHtml += `
@@ -243,7 +243,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
         }
 
         if (isAberto && (isGestorSetor || isAdm || isAutor)) {
-            botoesHtml += `<button class="btn btn-danger fw-bold rounded-pill ms-auto" onclick="pedirJustificativaECancelar()">Cancelar</button>`;
+            botoesHtml += `<button class="btn btn-danger fw-bold rounded-pill ms-auto" onclick="mostrarFormCancelar()">Cancelar</button>`;
         }
 
         modalFooter.innerHTML = botoesHtml;
@@ -291,16 +291,60 @@ window.mudarStatus = async (novoStatus, resolucao="") => {
     } catch(e) { alert("Erro de rede ao alterar status."); }
 };
 
-window.pedirResolucaoEFinalizar = () => {
-    const resolucao = prompt("Descreva a resolução do problema (Obrigatório para finalizar):");
-    if(resolucao) {
-        mudarStatus('finalizado', resolucao);
-    }
+window.mostrarFormFinalizar = () => {
+    const modalFooter = document.getElementById('modalFooterAcoes');
+    modalFooter.innerHTML = `
+        <div class="w-100">
+            <label class="form-label text-success fw-bold mb-1">Descreva a resolução do problema (Obrigatório):</label>
+            <textarea id="txtResolucao" class="form-control mb-3 rounded-3 shadow-sm border-success border-opacity-50" rows="2" placeholder="O que foi feito para resolver a situação?"></textarea>
+            <div class="d-flex justify-content-end gap-2">
+                <button class="btn btn-outline-secondary fw-bold rounded-pill px-4" onclick="voltarBotoesAcao()">Voltar</button>
+                <button class="btn btn-success fw-bold rounded-pill px-4" onclick="confirmarFinalizar()">Confirmar Finalização</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('txtResolucao').focus();
 };
 
-window.pedirJustificativaECancelar = async () => {
-    const justificativa = prompt("Qual a justificativa para o cancelamento? (Obrigatório):");
-    if(!justificativa) return;
+window.mostrarFormCancelar = () => {
+    const modalFooter = document.getElementById('modalFooterAcoes');
+    modalFooter.innerHTML = `
+        <div class="w-100">
+            <label class="form-label text-danger fw-bold mb-1">Qual a justificativa para o cancelamento? (Obrigatório):</label>
+            <textarea id="txtJustificativa" class="form-control mb-3 rounded-3 shadow-sm border-danger border-opacity-50" rows="2" placeholder="Por que este chamado não pode ser atendido?"></textarea>
+            <div class="d-flex justify-content-end gap-2">
+                <button class="btn btn-outline-secondary fw-bold rounded-pill px-4" onclick="voltarBotoesAcao()">Voltar</button>
+                <button class="btn btn-danger fw-bold rounded-pill px-4" onclick="confirmarCancelar()">Confirmar Cancelamento</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('txtJustificativa').focus();
+};
+
+window.voltarBotoesAcao = () => {
+    // Para recriar os botões originais, basta re-abrir o modal localmente (re-renderiza via backend)
+    abrirModalInteracao(chamadoAtualId, chamadoAtualCategoria, chamadoAtualStatus, chamadoAtualAutor);
+};
+
+window.confirmarFinalizar = () => {
+    const txt = document.getElementById('txtResolucao');
+    const resolucao = txt.value.trim();
+    if(!resolucao) {
+        alert("Por favor, preencha a resolução do problema para poder finalizar.");
+        txt.focus();
+        return;
+    }
+    mudarStatus('finalizado', resolucao);
+};
+
+window.confirmarCancelar = async () => {
+    const txt = document.getElementById('txtJustificativa');
+    const justificativa = txt.value.trim();
+    if(!justificativa) {
+        alert("Por favor, preencha a justificativa do cancelamento.");
+        txt.focus();
+        return;
+    }
     
     try {
         const res = await fetch(`/api/chamados/${chamadoAtualId}/cancelar`, {
