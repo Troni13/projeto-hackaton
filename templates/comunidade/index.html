@@ -55,10 +55,10 @@
                         </div>
                         
                         {% if current_user.id == anuncio.autor_id or current_user.role == 'adm' %}
-                        <div class="btn-group">
-                            <a href="{{ url_for('comunidade.editar_anuncio', id=anuncio.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
-                            <form action="{{ url_for('comunidade.deletar_anuncio', id=anuncio.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anúncio?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('comunidade.editar_anuncio', id=anuncio.id) }}" class="btn btn-sm btn-outline-secondary rounded-3">Editar</a>
+                            <form action="{{ url_for('comunidade.deletar_anuncio', id=anuncio.id) }}" method="POST" class="m-0" onsubmit="return confirm('Tem certeza que deseja excluir este anúncio?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">Excluir</button>
                             </form>
                         </div>
                         {% endif %}
