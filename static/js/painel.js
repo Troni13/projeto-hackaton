@@ -33,15 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return div.innerHTML;
     };
 
-    const montarUrl = () => {
-        const dados = new FormData(formFiltros);
-        const parametros = new URLSearchParams();
-        for (const [campo, valor] of dados.entries()) {
-            if (valor) parametros.append(campo, valor);
-        }
-        const query = parametros.toString();
-        return query ? `/api/chamados?${query}` : '/api/chamados';
-    };
+    let todosChamados = [];
 
     const atualizarTotal = (quantidade) => {
         totalChamados.textContent = quantidade === 1 ? '1 chamado' : `${quantidade} chamados`;
@@ -85,24 +77,66 @@ document.addEventListener('DOMContentLoaded', () => {
     window.carregarChamados = async () => {
         listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-info mb-0">Carregando chamados...</div></div>`;
         try {
-            const resposta = await fetch(montarUrl());
-            const chamados = await resposta.json();
-            if (!resposta.ok) throw new Error(chamados.erro || 'Erro ao carregar chamados');
+            const resposta = await fetch('/api/chamados');
+            todosChamados = await resposta.json();
+            if (!resposta.ok) throw new Error(todosChamados.erro || 'Erro ao carregar chamados');
             
-            atualizarTotal(chamados.length);
-            if (!chamados.length) {
-                listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-warning mb-0">Nenhum chamado encontrado.</div></div>`;
-                return;
-            }
-            listaChamados.innerHTML = chamados.map(montarCard).join('');
+            aplicarFiltros();
         } catch (erro) {
             atualizarTotal(0);
             listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-danger mb-0">${escaparHtml(erro.message)}</div></div>`;
         }
     };
 
-    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); carregarChamados(); });
-    btnLimparFiltros.addEventListener('click', () => { formFiltros.reset(); carregarChamados(); });
+    const aplicarFiltros = () => {
+        const dados = new FormData(formFiltros);
+        const pesquisa = (dados.get('pesquisa') || '').toLowerCase();
+        const data_inicio = dados.get('data_inicio') || '';
+        const prioridade = dados.get('prioridade') || '';
+        const setor = dados.get('setor') || '';
+
+        const chamadosFiltrados = todosChamados.filter(c => {
+            let matchPesquisa = true;
+            let matchData = true;
+            let matchPrioridade = true;
+            let matchSetor = true;
+
+            if (pesquisa) {
+                const textoPesquisa = `${c.localizacao} ${c.categoria} ${c.descricao} ${c.status} ${c.id} ${c.autor}`.toLowerCase();
+                matchPesquisa = textoPesquisa.includes(pesquisa);
+            }
+
+            if (data_inicio) {
+                // c.data_abertura format: "dd/mm/yyyy hh:mm"
+                // data_inicio format: "yyyy-mm-dd"
+                const partes = data_inicio.split('-');
+                if (partes.length === 3) {
+                    const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                    matchData = c.data_abertura.startsWith(dataFormatada);
+                }
+            }
+
+            if (prioridade) {
+                matchPrioridade = c.prioridade === prioridade;
+            }
+
+            if (setor) {
+                matchSetor = c.categoria === setor;
+            }
+
+            return matchPesquisa && matchData && matchPrioridade && matchSetor;
+        });
+
+        atualizarTotal(chamadosFiltrados.length);
+        if (!chamadosFiltrados.length) {
+            listaChamados.innerHTML = `<div class="col-12"><div class="alert alert-warning mb-0">Nenhum chamado encontrado.</div></div>`;
+            return;
+        }
+        listaChamados.innerHTML = chamadosFiltrados.map(montarCard).join('');
+    };
+
+    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); aplicarFiltros(); });
+    btnLimparFiltros.addEventListener('click', () => { formFiltros.reset(); aplicarFiltros(); });
 
     carregarChamados();
 });

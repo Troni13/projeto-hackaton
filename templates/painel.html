@@ -17,9 +17,19 @@
         </div>
         <div class="card-body p-4">
             <form id="formFiltros" class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="pesquisa" class="form-label fw-semibold">Pesquisa</label>
-                    <input type="search" class="form-control" id="pesquisa" name="pesquisa" placeholder="Local, categoria, descricao ou status">
+                    <input type="search" class="form-control" id="pesquisa" name="pesquisa" placeholder="Buscar...">
+                </div>
+
+                <div class="col-sm-6 col-md-2">
+                    <label for="setor" class="form-label fw-semibold">Setor</label>
+                    <select class="form-select" id="setor" name="setor">
+                        <option value="">Todos</option>
+                        <option value="CAE">CAE</option>
+                        <option value="CTI">CTI</option>
+                        <option value="CAP">CAP</option>
+                    </select>
                 </div>
 
                 <div class="col-sm-6 col-md-2">
@@ -36,12 +46,9 @@
                     </select>
                 </div>
 
-                <div class="col-sm-6 col-md-2 d-grid">
-                    <button type="submit" class="btn btn-success fw-bold">Filtrar</button>
-                </div>
-
-                <div class="col-sm-6 col-md-2 d-grid">
-                    <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary">Limpar filtros</button>
+                <div class="col-sm-6 col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-success fw-bold flex-grow-1">Filtrar</button>
+                    <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary flex-grow-1">Limpar</button>
                 </div>
             </form>
         </div>
