@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}Painel de Serviços - Zeladoria IFSP{% endblock %}
-
 {% block content %}
 <header class="bg-body py-5 border-bottom">
     <div class="container text-center">
@@ -15,22 +13,48 @@
         <div class="card-header bg-success text-white py-3 border-0">
             <h4 class="mb-0 fw-bold text-center">Serviços</h4>
         </div>
-        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-center gap-4">
-            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
-                <a class="text-black mb-1 text-decoration-none" href="/">Abrir Chamado</a>
-                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
-            </div>
-            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
-                <a class="text-black mb-1 text-decoration-none" href="/comunidade">Comunidade</a>
-                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
-            </div>
-            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
-                <a class="text-black mb-1 text-decoration-none" href="/painel">Painel de Gestão</a>
-                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
-            </div>
-            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
-                <a class="text-black mb-1 text-decoration-none" href="/setores">Setores</a>
-                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
+        <div class="card-body p-4">
+            <div class="row g-4 justify-content-center">   
+                <div class="col-sm-6 col-md-3">
+                    <div class="card shadow-sm border-1 h-100">
+                        <a href="/" class="text-decoration-none text-black p-3 d-block h-100">
+                            <span class="fw-bold fs-5 d-block mb-1">Abrir Chamado</span>
+                            <p class="text-muted small mb-0 fs-6">
+                                Registre novas ocorrências informando o local exato do problema, o nível de criticidade e uma descrição detalhada do que precisa de reparo imediato.
+                            </p>    
+                        </a>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card shadow-sm border-1 h-100">
+                        <a href="/comunidade" class="text-decoration-none text-black p-3 d-block h-100">
+                            <span class="fw-bold fs-5 d-block mb-1">Comunidade</span>
+                            <p class="text-muted small mb-0 fs-6">
+                                Participe do nosso espaço de interação coletiva. Publique títulos e descrições para compartilhar informações, avisos e sugestões com todos os usuários.
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card shadow-sm border-1 h-100">
+                        <a href="/painel" class="text-decoration-none text-black p-3 d-block h-100">
+                            <span class="fw-bold fs-5 d-block mb-1">Painel de Gestão</span>
+                            <p class="text-muted small mb-0 fs-6">
+                                Gerencie todos os chamados abertos através de filtros avançados por nome, setor responsável, data de abertura ou nível de prioridade da demanda.
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card shadow-sm border-1 h-100">
+                        <a href="/setores" class="text-decoration-none text-black p-3 d-block h-100">
+                            <span class="fw-bold fs-5 d-block mb-1">Setores</span>
+                            <p class="text-muted small mb-0 fs-6">
+                                Visualize o status da zeladoria de forma segmentada. Acesse listas de problemas organizadas diretamente pelas áreas responsáveis por cada resolução.
+                            </p>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
