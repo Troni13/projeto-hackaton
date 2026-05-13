@@ -157,7 +157,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
     areaComentario.style.display = 'none';
     modalFooter.innerHTML = '';
 
-    const modal = new bootstrap.Modal(document.getElementById('modalInteracao'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalInteracao'));
     modal.show();
 
     try {
