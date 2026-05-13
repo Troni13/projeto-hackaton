@@ -157,8 +157,11 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
     areaComentario.style.display = 'none';
     modalFooter.innerHTML = '';
 
-    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalInteracao'));
-    modal.show();
+    const modalEl = document.getElementById('modalInteracao');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    if (!modalEl.classList.contains('show')) {
+        modal.show();
+    }
 
     try {
         const res = await fetch(`/api/chamados/${id}/interacoes`);

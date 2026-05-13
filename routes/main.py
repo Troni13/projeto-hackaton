@@ -139,29 +139,39 @@ def transferir_chamado(id):
 @main_bp.route('/api/chamados/<int:id>/interacoes', methods=['GET'])
 @login_required
 def listar_interacoes(id):
-    chamado = Chamado.query.get_or_404(id)
-    
-    # Validação de acesso
-    if current_user.role == 'aluno' and chamado.user_id != current_user.id:
-        return jsonify({"erro": "Acesso negado"}), 403
+    try:
+        chamado = Chamado.query.get_or_404(id)
+        
+        # Validação de acesso
+        if current_user.role == 'aluno' and chamado.user_id != current_user.id:
+            return jsonify({"erro": "Acesso negado"}), 403
 
-    interacoes = []
-    for inter in chamado.interacoes:
-        interacoes.append({
-            "id": inter.id,
-            "autor": inter.user.nome_completo if inter.user else "Sistema",
-            "mensagem": inter.mensagem,
-            "data_hora": inter.data_hora.strftime("%d/%m/%Y %H:%M"),
-            "eh_sistema": inter.eh_sistema,
-            "autor_role": inter.user.role if inter.user else None
-        })
-    
-    return jsonify({
-        "status_atual": chamado.status,
-        "interacoes": interacoes,
-        "resolucao": chamado.resolucao,
-        "justificativa_cancelamento": chamado.justificativa_cancelamento
-    }), 200
+        interacoes = []
+        for inter in chamado.interacoes:
+            # Tratamento defensivo caso data_hora venha nula ou em formato inesperado
+            try:
+                data_str = inter.data_hora.strftime("%d/%m/%Y %H:%M") if inter.data_hora else "Sem data"
+            except:
+                data_str = str(inter.data_hora)
+
+            interacoes.append({
+                "id": inter.id,
+                "autor": inter.user.nome_completo if inter.user else "Sistema",
+                "mensagem": inter.mensagem,
+                "data_hora": data_str,
+                "eh_sistema": inter.eh_sistema,
+                "autor_role": inter.user.role if inter.user else None
+            })
+        
+        return jsonify({
+            "status_atual": chamado.status,
+            "interacoes": interacoes,
+            "resolucao": chamado.resolucao,
+            "justificativa_cancelamento": chamado.justificativa_cancelamento
+        }), 200
+    except Exception as e:
+        print(f"Erro em listar_interacoes: {e}")
+        return jsonify({"erro": f"Erro interno do servidor: {e}"}), 500
 
 @main_bp.route('/api/chamados/<int:id>/interagir', methods=['POST'])
 @login_required
