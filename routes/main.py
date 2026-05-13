@@ -10,6 +10,11 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 @login_required
 def index():
+    return render_template('services.html')
+
+@main_bp.route('/abrir-chamado')
+@login_required
+def abrir_chamado():
     return render_template('novo_chamado.html')
 
 @main_bp.route('/painel')
