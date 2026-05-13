@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Painel de Serviços - Zeladoria IFSP{% endblock %}
+
+{% block content %}
+<header class="bg-body py-5 border-bottom">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold text-success">Painel de Serviços</h1>
+        <p class="lead text-muted mb-0">Acompanhe, pesquise e filtre os serviços disponíveis.</p>
+    </div>
+</header>
+
+<main class="container my-5 flex-grow-1">
+    <section class="card shadow-sm border-1 bg-body">
+        <div class="card-header bg-success text-white py-3 border-0">
+            <h4 class="mb-0 fw-bold text-center">Serviços</h4>
+        </div>
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-center gap-4">
+            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
+                <a class="text-black mb-1 text-decoration-none" href="/">Abrir Chamado</a>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
+            </div>
+            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
+                <a class="text-black mb-1 text-decoration-none" href="/comunidade">Comunidade</a>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
+            </div>
+            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
+                <a class="text-black mb-1 text-decoration-none" href="/painel">Painel de Gestão</a>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
+            </div>
+            <div class="card shadow-sm border-1 p-3 col-sm-6 col-md-2 d-grid">
+                <a class="text-black mb-1 text-decoration-none" href="/setores">Setores</a>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aut delectus excepturi alias. Sit, animi ex ducimus eius quia incidunt corrupti vitae nobis ipsa exercitationem nisi, consectetur placeat, laboriosam illo suscipit.</p>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
