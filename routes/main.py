@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
 import google.generativeai as genai
-from models import Chamado, Interacao
+from models import Chamado, Interacao, Notificacao, User
 from extensions import db
 
 main_bp = Blueprint('main', __name__)
@@ -130,6 +130,16 @@ def transferir_chamado(id):
 
     try:
         chamado.categoria = novo_setor
+        
+        # Notificar o autor do chamado
+        notif = Notificacao(
+            user_id=chamado.user_id,
+            titulo="Chamado Transferido",
+            mensagem=f"Seu chamado #{chamado.id} foi transferido para o setor {novo_setor}.",
+            link=f"/painel"
+        )
+        db.session.add(notif)
+        
         db.session.commit()
         return jsonify({"mensagem": f"Chamado transferido para {novo_setor} com sucesso"}), 200
     except Exception as e:
@@ -203,6 +213,30 @@ def interagir_chamado(id):
             mensagem=mensagem
         )
         db.session.add(nova_interacao)
+        
+        # Sistema de Notificações
+        if current_user.id == chamado.user_id:
+            # Autor comentou: Notificar gestores do setor e admins
+            gestores = User.query.filter(User.role.in_(['gestor', 'professor', 'adm'])).all()
+            for g in gestores:
+                if g.setor is None or g.setor == chamado.categoria:
+                    notif = Notificacao(
+                        user_id=g.id,
+                        titulo=f"Nova mensagem (Chamado #{chamado.id})",
+                        mensagem=f"O autor enviou uma nova interação no chamado de {chamado.categoria}.",
+                        link="/painel"
+                    )
+                    db.session.add(notif)
+        else:
+            # Equipe comentou: Notificar o autor
+            notif = Notificacao(
+                user_id=chamado.user_id,
+                titulo=f"Resposta no Chamado #{chamado.id}",
+                mensagem=f"A equipe de {chamado.categoria} respondeu seu chamado.",
+                link="/painel"
+            )
+            db.session.add(notif)
+            
         db.session.commit()
         return jsonify({"mensagem": "Comentário adicionado!"}), 201
     except Exception as e:
@@ -245,8 +279,17 @@ def alterar_status(id):
             mensagem=msg_sistema,
             eh_sistema=True
         )
-        
         db.session.add(interacao_sistema)
+        
+        # Notificar o autor
+        notif = Notificacao(
+            user_id=chamado.user_id,
+            titulo=f"Status Atualizado",
+            mensagem=f"Seu chamado #{chamado.id} agora está: {novo_status.upper()}",
+            link="/painel"
+        )
+        db.session.add(notif)
+        
         db.session.commit()
         return jsonify({"mensagem": "Status atualizado com sucesso!"}), 200
     except Exception as e:
@@ -286,8 +329,17 @@ def cancelar_chamado(id):
             mensagem=f"Chamado CANCELADO.\nJustificativa: {justificativa}",
             eh_sistema=True
         )
-        
         db.session.add(interacao_sistema)
+        
+        if current_user.id != chamado.user_id:
+            notif = Notificacao(
+                user_id=chamado.user_id,
+                titulo=f"Chamado Cancelado",
+                mensagem=f"Seu chamado #{chamado.id} foi cancelado pela equipe.",
+                link="/painel"
+            )
+            db.session.add(notif)
+            
         db.session.commit()
         return jsonify({"mensagem": "Chamado cancelado com sucesso!"}), 200
     except Exception as e:

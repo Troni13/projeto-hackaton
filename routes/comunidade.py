@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import Anuncio, User
+from models import Anuncio, User, Notificacao
 from extensions import db
 from services.ai_service import analisar_anuncio
 
@@ -48,6 +48,19 @@ def novo_anuncio():
         )
         
         db.session.add(anuncio)
+        
+        # Notificar usuários se for um aviso oficial
+        if tipo_anuncio == 'oficial':
+            todos_usuarios = User.query.filter(User.id != current_user.id).all()
+            for u in todos_usuarios:
+                notif = Notificacao(
+                    user_id=u.id,
+                    titulo="Novo Aviso Oficial",
+                    mensagem=f"Foi publicado um novo aviso: {titulo}",
+                    link="/comunidade"
+                )
+                db.session.add(notif)
+
         db.session.commit()
         flash('Anúncio publicado com sucesso!', 'success')
         return redirect(url_for('comunidade.index'))

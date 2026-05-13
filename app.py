@@ -37,11 +37,13 @@ def create_app():
     from routes.main import main_bp
     from routes.admin import admin_bp
     from routes.comunidade import comunidade_bp
+    from routes.notificacoes import notificacoes_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(comunidade_bp)
+    app.register_blueprint(notificacoes_bp)
 
     # Criação das tabelas
     with app.app_context():

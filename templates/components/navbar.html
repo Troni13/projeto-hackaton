@@ -23,6 +23,27 @@
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="{{ url_for('comunidade.index') }}">Comunidade</a></li>
                 <li class="nav-item"><a class="nav-link nav-link-custom" href="/servicos">Serviços</a></li>
                 
+                <!-- Notificações -->
+                <li class="nav-item dropdown ms-lg-3 mt-2 mt-lg-0 me-lg-2">
+                    <a class="nav-link text-white position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
+                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+                        </svg>
+                        <span id="badgeNotificacoes" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">
+                            0
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom shadow-lg border-0 rounded-3 p-0" aria-labelledby="notifDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <li class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light rounded-top-3">
+                            <h6 class="mb-0 fw-bold">Notificações</h6>
+                            <button class="btn btn-sm btn-link text-decoration-none text-muted p-0" onclick="marcarTodasComoLidas()">Marcar todas como lidas</button>
+                        </li>
+                        <div id="listaNotificacoes">
+                            <li class="p-4 text-center text-muted small">Carregando...</li>
+                        </div>
+                    </ul>
+                </li>
+
                 <!-- O link de admin foi movido para o dropdown -->
                 <li class="nav-item dropdown ms-lg-2 mt-2 mt-lg-0">
                     <a class="nav-link dropdown-toggle text-white profile-badge" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

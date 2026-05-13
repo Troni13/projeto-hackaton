@@ -54,3 +54,14 @@ class Anuncio(db.Model):
     tags = db.Column(db.String(200), nullable=True)
 
     autor = db.relationship('User', backref=db.backref('anuncios', lazy=True))
+
+class Notificacao(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    titulo = db.Column(db.String(100), nullable=False)
+    mensagem = db.Column(db.Text, nullable=False)
+    link = db.Column(db.String(200), nullable=True)
+    lida = db.Column(db.Boolean, default=False)
+    data_criacao = db.Column(db.DateTime, default=lambda: datetime.now(timezone(timedelta(hours=-3))))
+
+    user = db.relationship('User', backref=db.backref('notificacoes', lazy=True, order_by='Notificacao.data_criacao.desc()'))
