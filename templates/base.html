@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 <head>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                // Opcional: seguir preferência do sistema se não houver tema salvo
+                // document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RadarIF{% endblock %}</title>
