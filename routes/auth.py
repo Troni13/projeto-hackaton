@@ -58,3 +58,7 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/services')
+def services():
+    return render_template('services.html')
