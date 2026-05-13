@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
 import google.generativeai as genai
-from models import Chamado
+from models import Chamado, Interacao
 from extensions import db
 
 main_bp = Blueprint('main', __name__)
@@ -186,20 +186,19 @@ def interagir_chamado(id):
     if not mensagem:
         return jsonify({"erro": "Mensagem vazia."}), 400
         
-    from models import Interacao
-    nova_interacao = Interacao(
-        chamado_id=chamado.id,
-        user_id=current_user.id,
-        mensagem=mensagem
-    )
-    
     try:
+        nova_interacao = Interacao(
+            chamado_id=chamado.id,
+            user_id=current_user.id,
+            mensagem=mensagem
+        )
         db.session.add(nova_interacao)
         db.session.commit()
         return jsonify({"mensagem": "Comentário adicionado!"}), 201
-    except:
+    except Exception as e:
         db.session.rollback()
-        return jsonify({"erro": "Erro ao salvar comentário."}), 500
+        print(f"Erro ao interagir chamado: {e}")
+        return jsonify({"erro": f"Erro ao salvar comentário: {e}"}), 500
 
 @main_bp.route('/api/chamados/<int:id>/status', methods=['PUT'])
 @login_required
@@ -222,29 +221,28 @@ def alterar_status(id):
     if novo_status == 'finalizado' and not resolucao:
         return jsonify({"erro": "É obrigatório enviar a resolução para finalizar."}), 400
 
-    from models import Interacao
-    
-    chamado.status = novo_status
-    
-    msg_sistema = f"Status alterado para: {novo_status.upper()}"
-    if novo_status == 'finalizado':
-        chamado.resolucao = resolucao
-        msg_sistema += f"\nResolução: {resolucao}"
-        
-    interacao_sistema = Interacao(
-        chamado_id=chamado.id,
-        user_id=current_user.id,
-        mensagem=msg_sistema,
-        eh_sistema=True
-    )
-    
     try:
+        chamado.status = novo_status
+        
+        msg_sistema = f"Status alterado para: {novo_status.upper()}"
+        if novo_status == 'finalizado':
+            chamado.resolucao = resolucao
+            msg_sistema += f"\nResolução: {resolucao}"
+            
+        interacao_sistema = Interacao(
+            chamado_id=chamado.id,
+            user_id=current_user.id,
+            mensagem=msg_sistema,
+            eh_sistema=True
+        )
+        
         db.session.add(interacao_sistema)
         db.session.commit()
         return jsonify({"mensagem": "Status atualizado com sucesso!"}), 200
-    except:
+    except Exception as e:
         db.session.rollback()
-        return jsonify({"erro": "Erro ao salvar status."}), 500
+        print(f"Erro ao alterar status: {e}")
+        return jsonify({"erro": f"Erro ao salvar status: {e}"}), 500
 
 @main_bp.route('/api/chamados/<int:id>/cancelar', methods=['PUT'])
 @login_required
@@ -268,21 +266,21 @@ def cancelar_chamado(id):
     if not pode_cancelar:
         return jsonify({"erro": "Você não tem permissão para cancelar este chamado."}), 403
 
-    from models import Interacao
-    chamado.status = 'cancelado'
-    chamado.justificativa_cancelamento = justificativa
-    
-    interacao_sistema = Interacao(
-        chamado_id=chamado.id,
-        user_id=current_user.id,
-        mensagem=f"Chamado CANCELADO.\nJustificativa: {justificativa}",
-        eh_sistema=True
-    )
-    
     try:
+        chamado.status = 'cancelado'
+        chamado.justificativa_cancelamento = justificativa
+        
+        interacao_sistema = Interacao(
+            chamado_id=chamado.id,
+            user_id=current_user.id,
+            mensagem=f"Chamado CANCELADO.\nJustificativa: {justificativa}",
+            eh_sistema=True
+        )
+        
         db.session.add(interacao_sistema)
         db.session.commit()
         return jsonify({"mensagem": "Chamado cancelado com sucesso!"}), 200
-    except:
+    except Exception as e:
         db.session.rollback()
-        return jsonify({"erro": "Erro ao cancelar chamado."}), 500
+        print(f"Erro ao cancelar chamado: {e}")
+        return jsonify({"erro": f"Erro ao cancelar chamado: {e}"}), 500
