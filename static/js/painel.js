@@ -143,10 +143,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Variaveis globais para o modal
 let chamadoAtualId = null;
+let chamadoAtualCategoria = null;
+let chamadoAtualStatus = null;
+let chamadoAtualAutor = null;
 
 // Funções do Modal
 window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
     chamadoAtualId = id;
+    chamadoAtualCategoria = categoria;
+    chamadoAtualStatus = status;
+    chamadoAtualAutor = autorNome;
+    
     const modalTitle = document.getElementById('modalInteracaoTitle');
     const chatContainer = document.getElementById('chatContainer');
     const areaComentario = document.getElementById('areaComentario');
@@ -169,17 +176,20 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
         
         if (!res.ok) throw new Error(data.erro);
         
+        // Atualiza status localmente
+        chamadoAtualStatus = data.status_atual;
+
         // Renderizar Chat
-        chatContainer.innerHTML = '';
         if(data.interacoes.length === 0) {
             chatContainer.innerHTML = `<div class="text-center text-muted mt-3">Nenhuma interação ainda.</div>`;
         } else {
+            let htmlConteudo = "";
             data.interacoes.forEach(msg => {
                 let align = msg.eh_sistema ? 'mx-auto' : (msg.autor_role === 'aluno' ? 'me-auto' : 'ms-auto');
                 let bg = msg.eh_sistema ? 'bg-warning text-dark bg-opacity-25' : (msg.autor_role === 'aluno' ? 'bg-white border' : 'bg-success text-white');
                 if (msg.eh_sistema && msg.mensagem.includes('CANCELADO')) bg = 'bg-danger text-white';
                 
-                chatContainer.innerHTML += `
+                htmlConteudo += `
                     <div class="p-3 rounded-4 shadow-sm ${bg} ${align}" style="max-width: 85%;">
                         <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem; opacity: 0.8;">
                             <strong>${msg.eh_sistema ? '🤖 Sistema' : escaparHtml(msg.autor)}</strong>
@@ -189,6 +199,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
                     </div>
                 `;
             });
+            chatContainer.innerHTML = htmlConteudo;
         }
         
         // Scroll to bottom
@@ -198,7 +209,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
         
         // Definir se o usuário tem permissão para o Setor deste chamado
         const isGestorSetor = (CURRENT_USER_ROLE === 'gestor' || CURRENT_USER_ROLE === 'professor') && (!CURRENT_USER_SETOR || CURRENT_USER_SETOR === categoria);
-        const isAutor = autorNome && (CURRENT_USER_ROLE === 'aluno'); // Simplificação, na prática seria bom verificar CURRENT_USER_ID == chamado.user_id se estivesse na resposta
+        const isAutor = autorNome && (CURRENT_USER_ROLE === 'aluno'); 
         const isAdm = CURRENT_USER_ROLE === 'adm';
 
         // Pode comentar?
@@ -236,7 +247,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
         modalFooter.innerHTML = botoesHtml;
 
     } catch(e) {
-        chatContainer.innerHTML = `<div class="alert alert-danger">${escaparHtml(e.message)}</div>`;
+        chatContainer.innerHTML = `<div class="alert alert-danger">Erro de renderização: ${escaparHtml(e.message)}</div>`;
     }
 };
 
@@ -253,12 +264,12 @@ window.enviarComentario = async () => {
         });
         if(res.ok) {
             txt.value = '';
-            abrirModalInteracao(chamadoAtualId, document.getElementById('modalInteracaoTitle').textContent.split(' - ')[1]);
+            abrirModalInteracao(chamadoAtualId, chamadoAtualCategoria, chamadoAtualStatus, chamadoAtualAutor);
         } else {
             const data = await res.json();
             alert(data.erro);
         }
-    } catch(e) { alert("Erro de rede"); }
+    } catch(e) { alert("Erro de rede ao enviar comentário."); }
 };
 
 window.mudarStatus = async (novoStatus, resolucao="") => {
@@ -270,12 +281,12 @@ window.mudarStatus = async (novoStatus, resolucao="") => {
         });
         if(res.ok) {
             carregarChamados();
-            abrirModalInteracao(chamadoAtualId, document.getElementById('modalInteracaoTitle').textContent.split(' - ')[1]);
+            abrirModalInteracao(chamadoAtualId, chamadoAtualCategoria, novoStatus, chamadoAtualAutor);
         } else {
             const data = await res.json();
             alert(data.erro);
         }
-    } catch(e) { alert("Erro de rede"); }
+    } catch(e) { alert("Erro de rede ao alterar status."); }
 };
 
 window.pedirResolucaoEFinalizar = () => {
@@ -297,12 +308,12 @@ window.pedirJustificativaECancelar = async () => {
         });
         if(res.ok) {
             carregarChamados();
-            abrirModalInteracao(chamadoAtualId, document.getElementById('modalInteracaoTitle').textContent.split(' - ')[1]);
+            abrirModalInteracao(chamadoAtualId, chamadoAtualCategoria, 'cancelado', chamadoAtualAutor);
         } else {
             const data = await res.json();
             alert(data.erro);
         }
-    } catch(e) { alert("Erro de rede"); }
+    } catch(e) { alert("Erro de rede ao cancelar."); }
 };
 
 window.transferir = async () => {
@@ -318,11 +329,10 @@ window.transferir = async () => {
         });
         if(res.ok) {
             carregarChamados();
-            // fecha modal pois ele transferiu
             bootstrap.Modal.getInstance(document.getElementById('modalInteracao')).hide();
         } else {
             const data = await res.json();
             alert(data.erro);
         }
-    } catch(e) { alert("Erro de rede"); }
+    } catch(e) { alert("Erro de rede ao transferir."); }
 };
