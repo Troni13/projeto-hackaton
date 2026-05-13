@@ -5,9 +5,11 @@ from models import Notificacao
 
 notificacoes_bp = Blueprint('notificacoes', __name__, url_prefix='/api/notificacoes')
 
+@notificacoes_bp.route('', methods=['GET'])
 @notificacoes_bp.route('/', methods=['GET'])
 @login_required
 def get_notificacoes():
+    print(f"Buscando notificações para o usuário {current_user.id}...")
     nao_lidas = Notificacao.query.filter_by(user_id=current_user.id, lida=False).order_by(Notificacao.data_criacao.desc()).all()
     
     # Limitar para não sobrecarregar
@@ -25,7 +27,7 @@ def get_notificacoes():
         
     return jsonify({"notificacoes": resultado}), 200
 
-@notificacoes_bp.route('/<int:id>/lida', methods=['PUT'])
+@notificacoes_bp.route('/<int:id>/lida/', methods=['PUT'])
 @login_required
 def marcar_lida(id):
     notificacao = Notificacao.query.get_or_404(id)
@@ -36,7 +38,7 @@ def marcar_lida(id):
     db.session.commit()
     return jsonify({"sucesso": True}), 200
 
-@notificacoes_bp.route('/ler_todas', methods=['PUT'])
+@notificacoes_bp.route('/ler_todas/', methods=['PUT'])
 @login_required
 def ler_todas():
     notificacoes = Notificacao.query.filter_by(user_id=current_user.id, lida=False).all()

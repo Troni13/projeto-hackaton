@@ -9,10 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function buscarNotificacoes() {
     try {
-        const res = await fetch('/api/notificacoes');
-        if(!res.ok) return;
+        const res = await fetch('/api/notificacoes/');
+        if(!res.ok) {
+            console.error("Erro na resposta da API de notificações:", res.status);
+            return;
+        }
         const data = await res.json();
-        
+        console.log("Notificações recebidas:", data.notificacoes);
         atualizarUiNotificacoes(data.notificacoes);
     } catch(e) {
         console.error("Erro ao buscar notificações:", e);
@@ -61,7 +64,7 @@ function atualizarUiNotificacoes(notificacoes) {
 window.clicarNotificacao = async (id, link) => {
     // Marca como lida em background
     try {
-        await fetch(`/api/notificacoes/${id}/lida`, { method: 'PUT' });
+        await fetch(`/api/notificacoes/${id}/lida/`, { method: 'PUT' });
     } catch(e) { console.error(e); }
     
     // Redireciona
@@ -70,7 +73,7 @@ window.clicarNotificacao = async (id, link) => {
 
 window.marcarComoLida = async (id) => {
     try {
-        const res = await fetch(`/api/notificacoes/${id}/lida`, { method: 'PUT' });
+        const res = await fetch(`/api/notificacoes/${id}/lida/`, { method: 'PUT' });
         if(res.ok) {
             buscarNotificacoes();
         }
@@ -79,7 +82,7 @@ window.marcarComoLida = async (id) => {
 
 window.marcarTodasComoLidas = async () => {
     try {
-        const res = await fetch(`/api/notificacoes/ler_todas`, { method: 'PUT' });
+        const res = await fetch(`/api/notificacoes/ler_todas/`, { method: 'PUT' });
         if(res.ok) {
             buscarNotificacoes();
         }

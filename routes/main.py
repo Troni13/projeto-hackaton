@@ -236,6 +236,7 @@ def interagir_chamado(id):
                 link="/painel"
             )
             db.session.add(notif)
+            print(f"Notificacao criada para o autor {chamado.user_id}")
             
         db.session.commit()
         return jsonify({"mensagem": "Comentário adicionado!"}), 201
