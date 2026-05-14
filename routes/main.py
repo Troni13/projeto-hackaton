@@ -22,6 +22,42 @@ def abrir_chamado():
 def painel():
     return render_template('painel.html')
 
+@main_bp.route('/setores')
+@login_required
+def setores():
+    # Apenas usuários com setor designado ou admin podem ver a página de setores
+    if not current_user.setor and current_user.role != 'adm':
+        return redirect(url_for('main.index'))
+    return render_template('setores.html')
+
+@main_bp.route('/api/chamados/setor', methods=['GET'])
+@login_required
+def listar_chamados_setor():
+    setor = request.args.get('setor')
+    
+    # Validação de acesso: ADM pode ver todos, outros apenas o seu setor
+    if current_user.role != 'adm' and current_user.setor != setor:
+        return jsonify({"erro": "Você não tem permissão para acessar os chamados deste setor."}), 403
+    
+    if not setor:
+        return jsonify({"erro": "Setor não especificado."}), 400
+        
+    chamados = Chamado.query.filter_by(categoria=setor).order_by(Chamado.data_abertura.desc()).all()
+    
+    lista = []
+    for c in chamados:
+        lista.append({
+            "id": c.id,
+            "localizacao": c.localizacao,
+            "categoria": c.categoria,
+            "descricao": c.descricao,
+            "prioridade": c.prioridade,
+            "status": c.status,
+            "data_abertura": c.data_abertura.strftime("%d/%m/%Y %H:%M"),
+            "autor": c.user.nome_completo if c.user else "Desconhecido"
+        })
+    return jsonify(lista), 200
+
 @main_bp.route('/api/chamados', methods=['POST'])
 @login_required
 def criar_chamado():
@@ -95,10 +131,8 @@ Mensagem do Usuário: {descricao}"""
 @main_bp.route('/api/chamados', methods=['GET'])
 @login_required
 def listar_chamados():
-    if current_user.role in ['adm', 'gestor', 'professor']:
-        chamados = Chamado.query.order_by(Chamado.data_abertura.desc()).all()
-    else:
-        chamados = Chamado.query.filter_by(user_id=current_user.id).order_by(Chamado.data_abertura.desc()).all()
+    # Agora mostra apenas os chamados que o próprio usuário abriu
+    chamados = Chamado.query.filter_by(user_id=current_user.id).order_by(Chamado.data_abertura.desc()).all()
         
     lista = []
     for c in chamados:

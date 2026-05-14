@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão de Setores - RadarIF{% endblock %}
+
+{% block content %}
+<header class="bg-body py-5 border-bottom">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold text-success">Gestão de Setores</h1>
+        <p class="lead text-muted mb-0">Atendimento e monitoramento por departamento.</p>
+    </div>
+</header>
+
+<main class="container my-5 flex-grow-1">
+    <!-- Espaço para Dashboard (Futuro) -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 fw-bold mb-0">Indicadores de Desempenho</h2>
+            <span class="badge bg-secondary bg-opacity-10 text-secondary">Em breve</span>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-body p-3 text-center">
+                    <span class="text-muted small fw-bold text-uppercase">Tempo Médio</span>
+                    <h3 class="fw-bold text-success mb-0">--</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-body p-3 text-center">
+                    <span class="text-muted small fw-bold text-uppercase">Concluídos</span>
+                    <h3 class="fw-bold text-success mb-0">--</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-body p-3 text-center">
+                    <span class="text-muted small fw-bold text-uppercase">Em Aberto</span>
+                    <h3 class="fw-bold text-warning mb-0">--</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-body p-3 text-center">
+                    <span class="text-muted small fw-bold text-uppercase">Satisfação</span>
+                    <h3 class="fw-bold text-info mb-0">--</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card shadow-sm border-0 rounded-4 bg-body overflow-hidden">
+        <div class="card-header bg-success text-white p-0 border-0">
+            <ul class="nav nav-tabs nav-fill border-0" id="sectorTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 text-white fw-bold active" id="cae-tab" data-bs-toggle="tab" data-bs-target="#CAE" type="button" role="tab">CAE</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 text-white fw-bold" id="cti-tab" data-bs-toggle="tab" data-bs-target="#CTI" type="button" role="tab">CTI</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 text-white fw-bold" id="cap-tab" data-bs-toggle="tab" data-bs-target="#CAP" type="button" role="tab">CAP</button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-4">
+            <div class="tab-content" id="sectorTabsContent">
+                <!-- Conteúdo será carregado via JS -->
+                <div class="tab-pane fade show active" id="CAE" role="tabpanel">
+                    <div class="row g-4" id="lista-CAE">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-success" role="status"></div>
+                            <p class="mt-2 text-muted">Carregando chamados do setor...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="CTI" role="tabpanel">
+                    <div class="row g-4" id="lista-CTI">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-success" role="status"></div>
+                            <p class="mt-2 text-muted">Carregando chamados do setor...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="CAP" role="tabpanel">
+                    <div class="row g-4" id="lista-CAP">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-success" role="status"></div>
+                            <p class="mt-2 text-muted">Carregando chamados do setor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Interação (Reutilizado do Painel) -->
+    <div class="modal fade" id="modalInteracao" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-success text-white border-0">
+            <h5 class="modal-title fw-bold" id="modalInteracaoTitle">Chamado #000</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0 bg-light">
+             <div id="chatContainer" class="p-4" style="height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                <div class="text-center text-muted mt-5 spinner-border mx-auto" role="status"></div>
+             </div>
+             <div id="areaComentario" class="p-3 bg-white border-top" style="display: none;">
+                 <textarea id="txtComentario" class="form-control mb-2 rounded-3" rows="2" placeholder="Digite uma nova informação ou comentário..."></textarea>
+                 <div class="d-flex justify-content-end">
+                     <button class="btn btn-success fw-bold rounded-pill px-4" onclick="enviarComentario()">Enviar Mensagem</button>
+                 </div>
+             </div>
+          </div>
+          <div class="modal-footer bg-white border-top-0 d-flex flex-wrap justify-content-between gap-2" id="modalFooterAcoes">
+          </div>
+        </div>
+      </div>
+    </div>
+</main>
+
+<style>
+    .nav-tabs .nav-link {
+        border: none;
+        opacity: 0.7;
+        transition: all 0.3s;
+    }
+    .nav-tabs .nav-link:hover {
+        opacity: 0.9;
+        background: rgba(255,255,255,0.1);
+    }
+    .nav-tabs .nav-link.active {
+        background: rgba(255,255,255,0.2) !important;
+        opacity: 1;
+        border-bottom: 3px solid white !important;
+    }
+</style>
+
+<script>
+    const CURRENT_USER_ROLE = "{{ current_user.role }}";
+    const CURRENT_USER_SETOR = "{{ current_user.setor or '' }}";
+    const CURRENT_USER_ID = "{{ current_user.id }}";
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/painel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/setores.js') }}"></script>
+{% endblock %}

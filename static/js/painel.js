@@ -131,10 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
         listaChamados.innerHTML = chamadosFiltrados.map(montarCard).join('');
     };
 
-    formFiltros.addEventListener('submit', (e) => { e.preventDefault(); aplicarFiltros(); });
-    btnLimparFiltros.addEventListener('click', () => { formFiltros.reset(); aplicarFiltros(); });
-
-    carregarChamados();
+    // Inicialização segura: apenas se os elementos existirem (estamos na página de painel)
+    if (formFiltros && listaChamados) {
+        formFiltros.addEventListener('submit', (e) => { e.preventDefault(); aplicarFiltros(); });
+        btnLimparFiltros.addEventListener('click', () => { formFiltros.reset(); aplicarFiltros(); });
+        carregarChamados();
+    }
 });
 
 // Variaveis globais para o modal

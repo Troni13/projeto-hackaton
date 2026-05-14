@@ -45,6 +45,7 @@
                         </a>
                     </div>
                 </div>
+                {% if current_user.role == 'adm' or current_user.setor %}
                 <div class="col-sm-6 col-md-3">
                     <div class="card shadow-sm border-1 h-100">
                         <a href="/setores" class="text-decoration-none p-3 d-block h-100">
@@ -55,6 +56,7 @@
                         </a>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </section>
