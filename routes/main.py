@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
 import google.generativeai as genai
 from models import Chamado, Interacao, Notificacao, User
@@ -54,6 +54,7 @@ def listar_chamados_setor():
             "prioridade": c.prioridade,
             "status": c.status,
             "data_abertura": c.data_abertura.strftime("%d/%m/%Y %H:%M"),
+            "data_abertura_raw": c.data_abertura.isoformat(),
             "autor": c.user.nome_completo if c.user else "Desconhecido"
         })
     return jsonify(lista), 200

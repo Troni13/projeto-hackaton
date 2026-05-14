@@ -58,6 +58,15 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
+    const atualizarIndicadores = (chamados) => {
+        const concluidos = chamados.filter(c => c.status === 'finalizado');
+        const emAberto = chamados.filter(c => c.status === 'aberto' || c.status === 'em atendimento');
+        
+        // Concluídos e Em Aberto
+        document.getElementById('indicador-concluidos').textContent = concluidos.length;
+        document.getElementById('indicador-aberto').textContent = emAberto.length;
+    };
+
     const carregarChamadosSetor = async (setor) => {
         const container = document.getElementById(`lista-${setor}`);
         if (!container) return;
@@ -69,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.erro);
+
+            atualizarIndicadores(data);
 
             if (data.length === 0) {
                 container.innerHTML = `<div class="col-12 text-center py-5 text-muted"><p>Nenhum chamado pendente para este setor.</p></div>`;
