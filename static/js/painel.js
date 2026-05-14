@@ -196,7 +196,7 @@ window.abrirModalInteracao = async (id, categoria, status, autorNome) => {
                 htmlConteudo += `
                     <div class="p-3 rounded-4 shadow-sm ${bg} ${align}" style="max-width: 85%;">
                         <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem; opacity: 0.8;">
-                            <strong>${msg.eh_sistema ? '🤖 Sistema' : window.escaparHtml(msg.autor)}</strong>
+                            <strong>${msg.eh_sistema ? 'Sistema' : window.escaparHtml(msg.autor)}</strong>
                             <span class="ms-3">${msg.data_hora}</span>
                         </div>
                         <div style="white-space: pre-wrap; font-size: 0.9rem;">${window.escaparHtml(msg.mensagem)}</div>
