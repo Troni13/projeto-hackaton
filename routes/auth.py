@@ -9,7 +9,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.painel'))
+        return redirect(url_for('main.index'))
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -19,7 +19,7 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('main.painel'))
+            return redirect(url_for('main.index'))
         else:
             flash('Usuário ou senha inválidos.', 'danger')
 
@@ -28,7 +28,7 @@ def login():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.painel'))
+        return redirect(url_for('main.index'))
 
     if request.method == 'POST':
         nome_completo = request.form.get('nome_completo')
